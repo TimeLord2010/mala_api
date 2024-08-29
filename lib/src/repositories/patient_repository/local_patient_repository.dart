@@ -12,10 +12,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vit_dart_extensions/vit_dart_extensions.dart';
 import 'package:vit_logger/vit_logger.dart';
 
+import '../../usecases/entities/patient/imports/load_patients_from_json.dart';
+import '../../usecases/entities/patient/profile_picture/get_picture_file.dart';
+import '../../usecases/entities/patient/upsert_patient.dart';
 import '../../usecases/file/get_export_patients_file_name.dart';
-import '../../usecases/imports/load_patients_from_json.dart';
-import '../../usecases/patient/profile_picture/get_picture_file.dart';
-import '../../usecases/patient/upsert_patient.dart';
 
 class LocalPatientRepository extends PatientInterface<int> {
   final Isar isar;

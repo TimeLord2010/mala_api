@@ -3,7 +3,7 @@ import 'package:mala_api/src/repositories/api_syncer_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../repositories/patient_repository/hybrid_patient_repository.dart';
-import '../usecases/error/get_error_message.dart';
+import '../usecases/object/error/get_error_message.dart';
 import 'create_patient_repository.dart';
 import 'http_client.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import '../../../../data/models/patient_tag.dart';
-import '../../../date/get_current_date_numbers.dart';
+import '../../../object/date/get_current_date_numbers.dart';
 import 'create_tags_pdf.dart';
 
 /// Creates a pdf of patients tags in memory in byte format and writes the data

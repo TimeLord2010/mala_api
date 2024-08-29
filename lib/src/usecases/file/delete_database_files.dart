@@ -4,7 +4,7 @@ import 'package:vit_dart_extensions/vit_dart_extensions_io.dart';
 
 import '../../factories/create_database_client.dart';
 import '../../factories/logger.dart';
-import '../error/get_error_message.dart';
+import '../object/error/get_error_message.dart';
 import 'get_database_directory.dart';
 
 Future<void> deleteDatabaseFiles() async {

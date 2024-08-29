@@ -1,9 +1,9 @@
 import '../../data/entities/patient.dart';
 import '../../data/interfaces/patient_interface.dart';
 import '../../data/models/patient_query.dart';
-import '../../usecases/patient/api/assign_remote_id_to_patient.dart';
-import '../../usecases/patient/api/update_remote_patient_picture.dart';
-import '../../usecases/patient/upsert_patient.dart';
+import '../../usecases/entities/patient/api/assign_remote_id_to_patient.dart';
+import '../../usecases/entities/patient/api/update_remote_patient_picture.dart';
+import '../../usecases/entities/patient/upsert_patient.dart';
 import '../patient_api_repository.dart';
 
 class OnlinePatientRepository extends PatientInterface<String> {

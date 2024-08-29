@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/entities/patient.dart';
 import '../data/enums/local_keys.dart';
 import '../factories/logger.dart';
-import '../usecases/error/get_error_message.dart';
+import '../usecases/object/error/get_error_message.dart';
 import 'patient_repository/hybrid_patient_repository.dart';
 
 class ApiSynchronizerRepository {
