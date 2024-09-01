@@ -139,6 +139,7 @@ class LocalPatientRepository extends PatientInterface<int> {
 
   Future<List<Patient>> importPatients({
     required String zipFileName,
+    void Function(double progress)? onProgress,
   }) async {
     var dir = await getApplicationDocumentsDirectory();
     logger.info('zipFile: $zipFileName');
@@ -179,7 +180,8 @@ class LocalPatientRepository extends PatientInterface<int> {
       );
       var chuncks = patients.chunck(50);
       var added = <Patient>[];
-      for (var chunck in chuncks) {
+      for (int i = 0; i < chuncks.length; i++) {
+        var chunck = chuncks.elementAt(i);
         var creationDates =
             chunck.map((x) => x.createdAt).whereType<DateTime>();
         var foundAlreadySaved = await listByCreation(creationDates);
@@ -198,9 +200,13 @@ class LocalPatientRepository extends PatientInterface<int> {
           await upsertPatient(
             record,
             pictureData: picData,
+            waitForBackgroundUpload: true,
           );
         }
         added.addAll(newRecords);
+
+        double percentage = (i + 1) / chuncks.length;
+        onProgress?.call(percentage);
 
         // To implement already existing restoration of users, each user would
         // need to be reviewed to every change OR the system could

@@ -3,4 +3,4 @@
 /// More dartdocs go here.
 library;
 
-export './src/index.dart';
+export 'src/mala_api.dart';

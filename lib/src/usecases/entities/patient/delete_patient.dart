@@ -8,7 +8,11 @@ import '../../../factories/logger.dart';
 import '../../../factories/operation_permission.dart';
 import 'api/background/send_deletion_in_background.dart';
 
-Future<void> deletePatient(Patient patient) async {
+Future<void> deletePatient(
+  Patient patient, {
+  void Function()? onUpload,
+  void Function(Object err)? onUploadError,
+}) async {
   if (!operationPermission.deletePatient) {
     logger.warn('Aborted patient deletion due to operation permission');
     return;
@@ -19,7 +23,11 @@ Future<void> deletePatient(Patient patient) async {
     var rep = await createPatientRepository();
     var remoteId = patient.remoteId;
     if (remoteId != null) {
-      unawaited(sendDeletionInBackground(remoteId));
+      unawaited(sendDeletionInBackground(remoteId).then((_) {
+        onUpload?.call();
+      }).catchError((err) {
+        onUploadError?.call(err);
+      }));
       // await postPatientsChanges(
       //   deleted: [remoteId],
       // );

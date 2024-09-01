@@ -13,6 +13,9 @@ Future<Patient> upsertPatient(
   Uint8List? pictureData,
   bool syncWithServer = true,
   bool ignorePicture = false,
+  bool waitForBackgroundUpload = false,
+  void Function()? onUpload,
+  void Function(Object err)? onUploadFail,
 }) async {
   var patientId = patient.id;
   var stopWatch = VitStopWatch('upsertPatient:$patientId');
@@ -25,13 +28,14 @@ Future<Patient> upsertPatient(
     );
   }
   if (syncWithServer) {
-    stopWatch.lap(tag: 'local done');
-
-    // TODO: Notify faileire
-    unawaited(sendChangesInBackground(patient));
-    // await postPatientsChanges(
-    //   changed: [patient],
-    // );
+    var future = sendChangesInBackground(patient).then((_) {
+      onUpload?.call();
+    }).catchError((err) {
+      onUploadFail?.call(err);
+    });
+    if (waitForBackgroundUpload) {
+      await future;
+    }
   }
   stopWatch.stop();
   return result;

@@ -12,6 +12,7 @@ dependencies:
   isar: ^3.1.0+1
   path_provider: ^2.1.4
   pdf: ^3.11.1
+  printing: ^5.13.2
   search_cep: ^4.0.2
   shared_preferences: ^2.3.2
   system_info2: ^4.0.0
