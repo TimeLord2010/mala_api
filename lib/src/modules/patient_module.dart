@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:mala_api/src/repositories/index.dart';
+
 import '../data/entities/address.dart';
 import '../data/entities/patient.dart';
 import '../data/models/patient_query.dart';
 import '../usecases/entities/index.dart';
 
 class PatientModule {
+  final semaphore = PatientsSemaphore();
   final patientUploadController = StreamController<Patient>();
   final patientDeletedController = StreamController<int>();
   final errorController = StreamController<Exception>();

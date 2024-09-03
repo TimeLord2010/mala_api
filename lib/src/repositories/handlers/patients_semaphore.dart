@@ -1,8 +1,6 @@
 import 'dart:async';
 
-enum PatientTask {
-  pictureLoad,
-}
+import '../../data/enums/patient_task.dart';
 
 class PatientsSemaphore {
   final Map<int, TaskSemaphore> patientLocks = {};
