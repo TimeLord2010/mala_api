@@ -8,4 +8,6 @@ class UserModule {
   Future<void> logout() async {
     await signout();
   }
+
+  bool get isLogged => isAuthenticated();
 }
