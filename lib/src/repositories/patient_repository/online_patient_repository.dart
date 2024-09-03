@@ -1,6 +1,5 @@
-import '../../data/entities/patient.dart';
-import '../../data/interfaces/patient_interface.dart';
-import '../../data/models/patient_query.dart';
+import 'package:mala_api/mala_api.dart';
+
 import '../../usecases/entities/patient/api/assign_remote_id_to_patient.dart';
 import '../../usecases/entities/patient/api/update_remote_patient_picture.dart';
 import '../../usecases/entities/patient/upsert_patient.dart';
@@ -14,15 +13,18 @@ class OnlinePatientRepository extends PatientInterface<String> {
   }
 
   @override
-  Future<void> delete(Patient patient) {
-    // TODO: implement delete
-    throw UnimplementedError();
+  Future<void> delete(Patient patient) async {
+    var id = patient.remoteId;
+    if (id == null) {
+      logger.info('Abort online patient deletion: no remote id');
+      return;
+    }
+    await deleteById(id);
   }
 
   @override
-  Future<void> deleteById(String id) {
-    // TODO: implement deleteById
-    throw UnimplementedError();
+  Future<void> deleteById(String id) async {
+    await postPatientsChanges(deleted: [id]);
   }
 
   @override
@@ -44,9 +46,11 @@ class OnlinePatientRepository extends PatientInterface<String> {
   }
 
   @override
-  Future<Patient> upsert(Patient patient) {
-    // TODO: implement upsert
-    throw UnimplementedError();
+  Future<Patient> upsert(Patient patient) async {
+    await postPatientsChanges(
+      changed: [patient],
+    );
+    return patient;
   }
 
   Future<void> postPatientsChanges({
