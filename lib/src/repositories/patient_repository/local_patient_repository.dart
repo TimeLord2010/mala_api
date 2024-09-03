@@ -194,7 +194,7 @@ class LocalPatientRepository extends PatientInterface<int> {
           if (createdAt == null) return true;
           return !hasCreated(createdAt);
         });
-        for (var record in newRecords) {
+        for (Patient record in newRecords) {
           var picData = await getPic(record.id);
           record.id = Isar.autoIncrement;
           await upsertPatient(

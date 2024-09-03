@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:mala_api/src/usecases/entities/patient/local_upsert_patient.dart';
+
 import '../../data/entities/patient.dart';
 import '../../data/interfaces/patient_interface.dart';
 import '../../data/models/patient_query.dart';
 import '../../data/responses/get_patient_changes_response.dart';
 import '../../factories/logger.dart';
 import '../../usecases/entities/logs/insert_remote_log.dart';
-import '../../usecases/entities/patient/upsert_patient.dart';
 import '../../usecases/object/error/get_error_message.dart';
 import '../../usecases/object/number/average.dart';
 import '../handlers/stop_watch_events.dart';
@@ -130,11 +131,7 @@ class HybridPatientRepository extends PatientInterface<String> {
             logger.warn('Local patient found with same remote id when syncing');
             patient.id = localId;
           }
-          await upsertPatient(
-            patient,
-            syncWithServer: false,
-            ignorePicture: true,
-          );
+          await localUpsertPatient(patient);
           setLastServerDate(patient.uploadedAt!);
         }
         for (var deleteRecord in response.deleted) {

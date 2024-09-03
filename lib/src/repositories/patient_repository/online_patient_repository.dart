@@ -1,8 +1,8 @@
 import 'package:mala_api/mala_api.dart';
+import 'package:mala_api/src/usecases/entities/patient/local_upsert_patient.dart';
 
 import '../../usecases/entities/patient/api/assign_remote_id_to_patient.dart';
 import '../../usecases/entities/patient/api/update_remote_patient_picture.dart';
-import '../../usecases/entities/patient/upsert_patient.dart';
 import '../patient_api_repository.dart';
 
 class OnlinePatientRepository extends PatientInterface<String> {
@@ -80,11 +80,7 @@ class OnlinePatientRepository extends PatientInterface<String> {
     var oldPatients = changed.where((x) => x.remoteId != null);
     for (var patient in oldPatients) {
       patient.uploadedAt = DateTime.now();
-      await upsertPatient(
-        patient,
-        ignorePicture: true,
-        syncWithServer: false,
-      );
+      await localUpsertPatient(patient);
       await updateRemotePatientPicture(patient);
     }
     if (changed.isNotEmpty) {

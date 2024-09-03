@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:mala_api/src/repositories/index.dart';
+import 'package:mala_api/src/usecases/entities/patient/local_upsert_patient.dart';
 
 import '../data/entities/address.dart';
 import '../data/entities/patient.dart';
@@ -114,11 +115,7 @@ class PatientModule {
         patient.hasPicture = false;
 
         // Fixing the patient model to flag no picture.
-        await upsertPatient(
-          patient,
-          ignorePicture: true,
-          syncWithServer: false,
-        );
+        await localUpsertPatient(patient);
         return null;
       }
 
