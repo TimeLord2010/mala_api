@@ -56,7 +56,6 @@ class ServerModule {
         return;
       }
       var dialogMsg = msg ?? 'Erro desconhecido';
-      var dialogFullMessage = '$dialogMsg\n${stack.toString()}';
       unawaited(insertRemoteLog(
         context: 'Syncronizing data',
         message: dialogMsg,
@@ -64,7 +63,7 @@ class ServerModule {
         level: 'error',
       ));
       if (shouldAbort()) return;
-      errorNotifier('sincronização de registros', dialogFullMessage);
+      errorNotifier('sincronização de registros', dialogMsg);
     }
   }
 }
