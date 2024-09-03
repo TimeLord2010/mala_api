@@ -42,7 +42,7 @@ class ServerModule {
 
       // Sending new patients to server
       uiNotifier('Enviando mudanças feitas enquanto offline');
-      sendPendingPatients();
+      await sendPendingPatients();
       if (shouldAbort()) return;
 
       // Retring failed updates to server

@@ -1,49 +1,49 @@
-import 'package:mala_api/src/usecases/local_store/index.dart';
+import 'package:mala_api/src/usecases/local_store/index.dart' as local;
 
 class TagPdfConfiguration {
   // MARK: Dimensions
 
-  double get tagWidth => getTagWidth();
-  set tagWidth(double value) {
-    setTagWidth(value);
+  double get tagWidth => local.getTagWidth();
+  Future<void> setTagWidth(double value) async {
+    await local.setTagWidth(value);
   }
 
-  double get tagHeight => getTagHeight();
-  set tagHeight(double value) {
-    setTagHeight(value);
+  double get tagHeight => local.getTagHeight();
+  Future<void> setTagHeight(double value) async {
+    await local.setTagHeight(value);
   }
 
   // MARK: Margin
 
-  double get tagLeftMargin => getTagLeftMargin();
-  set tagLeftMargin(double value) {
-    setTagLeftMargin(value);
+  double get tagLeftMargin => local.getTagLeftMargin();
+  Future<void> setTagLeftMargin(double value) async {
+    await local.setTagLeftMargin(value);
   }
 
-  double get tagRightMargin => getTagRightMargin();
-  set tagRightMargin(double value) {
-    setTagRightMargin(value);
+  double get tagRightMargin => local.getTagRightMargin();
+  Future<void> setTagRightMargin(double value) async {
+    await local.setTagRightMargin(value);
   }
 
-  double get tagTopMargin => getTagTopMargin();
-  set tagTopMargin(double value) {
-    setTagTopMargin(value);
+  double get tagTopMargin => local.getTagTopMargin();
+  Future<void> setTagTopMargin(double value) async {
+    await local.setTagTopMargin(value);
   }
 
-  double get tagBottomMargin => getTagBottomMargin();
-  set tagBottomMargin(double value) {
-    setTagBottomMargin(value);
+  double get tagBottomMargin => local.getTagBottomMargin();
+  Future<void> setTagBottomMargin(double value) async {
+    await local.setTagBottomMargin(value);
   }
 
   // MARK: Spacings
 
-  double get tagHorizontalSpacing => getTagHorizontalSpacing();
-  set tagHorizontalSpacing(double value) {
-    setTagHorizontalSpacing(value);
+  double get tagHorizontalSpacing => local.getTagHorizontalSpacing();
+  Future<void> setTagHorizontalSpacing(double value) async {
+    await local.setTagHorizontalSpacing(value);
   }
 
-  double get tagVerticalSpacing => getTagVerticalSpacing();
-  set tagVerticalSpacing(double value) {
-    setTagVerticalSpacing(value);
+  double get tagVerticalSpacing => local.getTagVerticalSpacing();
+  Future<void> setTagVerticalSpacing(double value) async {
+    await local.setTagVerticalSpacing(value);
   }
 }
