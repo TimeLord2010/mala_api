@@ -138,4 +138,11 @@ class PatientModule {
     }
     return null;
   }
+
+  Future<void> savePicture(int id, [Uint8List? data]) async {
+    await saveOrRemoveProfilePicture(
+      patientId: id,
+      data: data,
+    );
+  }
 }
