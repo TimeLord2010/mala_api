@@ -24,7 +24,7 @@ class PatientApiRepository {
         var toApiMap = x.toApiMap;
         return toApiMap;
       }).toList(),
-      'delete': (deleted ?? []),
+      'deleted': (deleted ?? []),
     };
     var response = await dio.post(
       '/patient/sync',
