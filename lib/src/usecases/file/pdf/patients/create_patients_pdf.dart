@@ -15,7 +15,7 @@ const double _margin = _cm * 0.5;
 const double _contentWidth = _totalWidth - (2 * _margin);
 
 Future<Uint8List> createPatientsPdf({
-  required List<Patient> patients,
+  required Iterable<Patient> patients,
 }) async {
   var doc = Document(
       theme: ThemeData(
@@ -29,7 +29,7 @@ Future<Uint8List> createPatientsPdf({
   return bytes;
 }
 
-Page _createPage(List<Patient> patients) {
+Page _createPage(Iterable<Patient> patients) {
   var page = MultiPage(
     pageFormat: PdfPageFormat.a4,
     margin: const EdgeInsets.all(_margin),

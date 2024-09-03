@@ -8,7 +8,7 @@ import '../data/entities/patient.dart';
 
 class PdfModule {
   Future<void> printInfo({
-    required List<Patient> patients,
+    required Iterable<Patient> patients,
   }) async {
     var bytes = await createPatientsPdf(patients: patients);
     if (Platform.isMacOS) {
