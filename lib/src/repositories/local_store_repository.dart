@@ -7,6 +7,10 @@ class LocalStoreRepository {
 
   LocalStoreRepository(this._prefs);
 
+  bool has(LocalKeys key) {
+    return _prefs.containsKey(key.name);
+  }
+
   Future<bool> remove(LocalKeys key) async {
     var didRemove = await _prefs.remove(key.name);
     return didRemove;

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:mala_api/src/usecases/entities/patient/send_pending_patients.dart';
+import 'package:mala_api/src/usecases/local_store/jwt/has_jwt.dart';
 
 import '../factories/index.dart';
 import '../usecases/entities/index.dart';
@@ -26,6 +27,10 @@ class ServerModule {
     required void Function(String context, String message) errorNotifier,
   }) async {
     try {
+      var isAuthed = hasJWT();
+      if (!isAuthed) {
+        return;
+      }
       // Refresh JWT
       uiNotifier('Atualizando token de autenticação');
       await refreshJwt();
