@@ -5,6 +5,10 @@ import 'package:mala_api/src/usecases/entities/patient/profile_picture/get_pictu
 
 import '../../../../factories/logger.dart';
 
+/// Updates the patient picture.
+///
+/// If no data is given, the file is deleted, otherwise, the data is saved to
+/// to the local storage.
 Future<void> saveOrRemoveProfilePicture({
   required int patientId,
   required Uint8List? data,

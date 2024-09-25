@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:mala_api/src/repositories/handlers/patient_throttle.dart';
 import 'package:mala_api/src/repositories/index.dart';
 import 'package:mala_api/src/usecases/entities/patient/local_upsert_patient.dart';
 
@@ -17,11 +18,19 @@ class PatientModule {
   final patientDeletedController = StreamController<int>();
   final errorController = StreamController<Exception>();
 
+  final _throttler = PatientThrottle();
+
   Future<Address?> searchCep(String cep) {
     return searchAddress(cep);
   }
 
   Future<void> upsert(Patient patient, Uint8List? pictureData) async {
+    // Preventing duplicate patients caused by repeated button presses.
+    var canProcess = _throttler.start(patient.name ?? '');
+    if (!canProcess) {
+      return;
+    }
+
     await upsertPatient(
       patient,
       pictureData: pictureData,
@@ -31,6 +40,7 @@ class PatientModule {
       onUploadFail: (err) {
         if (err is Exception) errorController.add(err);
       },
+      waitForBackgroundUpload: false,
     );
   }
 
