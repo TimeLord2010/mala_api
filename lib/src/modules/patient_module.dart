@@ -14,9 +14,8 @@ import '../usecases/object/error/get_error_message.dart';
 
 class PatientModule {
   final semaphore = PatientsSemaphore();
-  final patientUploadController = StreamController<Patient>();
+  static final patientUploadController = StreamController<Patient>();
   final patientDeletedController = StreamController<int>();
-  final errorController = StreamController<Exception>();
 
   final _throttler = PatientThrottle();
 
@@ -38,7 +37,7 @@ class PatientModule {
         patientUploadController.add(patient);
       },
       onUploadFail: (err) {
-        if (err is Exception) errorController.add(err);
+        patientUploadController.addError(err);
       },
       waitForBackgroundUpload: false,
     );
@@ -51,7 +50,7 @@ class PatientModule {
         patientDeletedController.add(patient.id);
       },
       onUploadError: (err) {
-        if (err is Exception) errorController.add(err);
+        patientDeletedController.addError(err);
       },
     );
   }

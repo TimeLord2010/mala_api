@@ -1,4 +1,5 @@
 import 'package:mala_api/src/data/interfaces/patient_interface.dart';
+import 'package:mala_api/src/modules/patient_module.dart';
 import 'package:mala_api/src/repositories/index.dart';
 
 import '../data/enums/app_operation_mode.dart';
@@ -11,6 +12,7 @@ Future<PatientInterface> createPatientRepository() async {
     AppOperationMode.hybrid => HybridPatientRepository(
         localRepository: await _createLocal(),
         onlineRepository: OnlinePatientRepository(),
+        updatedStream: PatientModule.patientUploadController,
       ),
     _ => throw Exception('Not implemented'),
   };

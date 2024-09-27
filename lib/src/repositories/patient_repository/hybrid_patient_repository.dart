@@ -19,9 +19,12 @@ class HybridPatientRepository extends PatientInterface<String> {
   final LocalPatientRepository localRepository;
   final OnlinePatientRepository onlineRepository;
 
+  final StreamController<Patient> updatedStream;
+
   HybridPatientRepository({
     required this.localRepository,
     required this.onlineRepository,
+    required this.updatedStream,
   });
 
   @override
@@ -51,8 +54,13 @@ class HybridPatientRepository extends PatientInterface<String> {
   @override
   Future<Patient> upsert(Patient patient) async {
     var localPatient = await localRepository.upsert(patient);
-    var remotePatient = await onlineRepository.upsert(localPatient);
-    return remotePatient;
+    var uploadFuture = onlineRepository.upsert(localPatient);
+    unawaited(uploadFuture.then((v) {
+      updatedStream.add(v);
+    }).catchError((err) {
+      updatedStream.addError(err);
+    }));
+    return localPatient;
   }
 
   Future<void> sendAllToApi() async {

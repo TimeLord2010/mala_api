@@ -8,6 +8,7 @@ import 'package:mala_api/src/data/entities/patient.dart';
 import 'package:mala_api/src/data/interfaces/patient_interface.dart';
 import 'package:mala_api/src/data/models/patient_query.dart';
 import 'package:mala_api/src/factories/logger.dart';
+import 'package:mala_api/src/usecases/entities/index.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vit_dart_extensions/vit_dart_extensions.dart';
 import 'package:vit_logger/vit_logger.dart';
@@ -197,10 +198,10 @@ class LocalPatientRepository extends PatientInterface<int> {
         for (Patient record in newRecords) {
           var picData = await getPic(record.id);
           record.id = Isar.autoIncrement;
-          await upsertPatient(
-            record,
-            pictureData: picData,
-            waitForBackgroundUpload: true,
+          await upsert(record);
+          await saveOrRemoveProfilePicture(
+            patientId: record.id,
+            data: picData,
           );
         }
         added.addAll(newRecords);
