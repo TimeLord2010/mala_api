@@ -3,6 +3,7 @@
 /// More dartdocs go here.
 library;
 
+export './src/modules/index.dart';
 export 'src/data/index.dart';
 export 'src/factories/logger.dart';
 export 'src/mala_api.dart';
