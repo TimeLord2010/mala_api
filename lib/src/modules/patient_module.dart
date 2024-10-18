@@ -14,8 +14,10 @@ import '../usecases/object/error/get_error_message.dart';
 
 class PatientModule {
   final semaphore = PatientsSemaphore();
-  static final patientUploadController = StreamController<Patient>();
-  final patientDeletedController = StreamController<int>();
+  static final StreamController<Patient> patientUploadController =
+      StreamController.broadcast();
+  final StreamController<int> patientDeletedController =
+      StreamController.broadcast();
 
   final _throttler = PatientThrottle();
 
