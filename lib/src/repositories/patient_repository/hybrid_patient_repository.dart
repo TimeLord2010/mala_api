@@ -122,6 +122,9 @@ class HybridPatientRepository extends PatientInterface<String> {
       };
     }
 
+    /// List of ids to check cycles in the fetch loop.
+    var ids = <String>{};
+
     try {
       while (true) {
         if (didCancel != null && didCancel()) {
@@ -130,8 +133,19 @@ class HybridPatientRepository extends PatientInterface<String> {
         var response = await fetch();
         logger.info('Found ${response.length} to sync from server');
         if (response.isEmpty) {
+          logger.info('Completed fetch changes');
           break;
         }
+
+        // Breaking cycles
+        var currentIds = response.changed.map((x) => x.remoteId!).toSet();
+        if (ids.isNotEmpty && currentIds.every((x) => ids.contains(x))) {
+          logger.warn('Sync finished because every id is the same as before');
+          break;
+        }
+        ids.clear();
+        ids.addAll(currentIds);
+
         for (var patient in response.changed) {
           var remoteId = patient.remoteId!;
           var localId = await localRepository.findIdByRemoteId(remoteId);
