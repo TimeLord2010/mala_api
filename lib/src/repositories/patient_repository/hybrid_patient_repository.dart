@@ -185,9 +185,11 @@ class HybridPatientRepository extends PatientInterface<String> {
         } else {
           updater?.call(lastServerDate?.toIso8601String());
         }
-        if (response.length < pageSize) {
-          break;
-        }
+
+        // if (response.length < pageSize) {
+        //   logger.warn('Breaking since the response length is smaller than page size');
+        //   break;
+        // }
       }
       unawaited(insertRemoteLog(
         message: 'Finished syncing',
