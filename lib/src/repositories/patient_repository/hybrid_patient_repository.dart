@@ -128,6 +128,7 @@ class HybridPatientRepository extends PatientInterface<String> {
     try {
       while (true) {
         if (didCancel != null && didCancel()) {
+          logger.warn('Aborting sync since the called canceled');
           break;
         }
         var response = await fetch();
