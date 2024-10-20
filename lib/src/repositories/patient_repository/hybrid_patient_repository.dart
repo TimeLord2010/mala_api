@@ -145,6 +145,7 @@ class HybridPatientRepository extends PatientInterface<String> {
         }
         ids.clear();
         ids.addAll(currentIds);
+        logger.debug('Scanning ids: $currentIds');
 
         for (var patient in response.changed) {
           var remoteId = patient.remoteId!;
