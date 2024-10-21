@@ -18,8 +18,8 @@ class PatientApiRepository {
     var dates = result.dates;
     if (dates != null &&
         (dates.finalDate != null || dates.initialDate != null)) {
-      var initialDate = dates.initialDate?.formatAsReadable();
-      var finalDate = dates.finalDate?.formatAsReadable();
+      var initialDate = dates.initialDate?.toIso8601String();
+      var finalDate = dates.finalDate?.toIso8601String();
       logger.debug(
           '(PatientApiRepository.getServerChanges) dates: $initialDate - $finalDate');
     }
