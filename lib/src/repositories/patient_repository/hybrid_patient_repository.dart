@@ -87,7 +87,6 @@ class HybridPatientRepository extends PatientInterface<String> {
     bool Function()? didCancel,
   }) async {
     var begin = DateTime.now();
-    var pageSize = 150;
 
     var eventTimes = StopWatchEvents();
 
@@ -186,11 +185,6 @@ class HybridPatientRepository extends PatientInterface<String> {
         } else {
           updater?.call(lastServerDate?.toIso8601String());
         }
-
-        // if (response.length < pageSize) {
-        //   logger.warn('Breaking since the response length is smaller than page size');
-        //   break;
-        // }
       }
       unawaited(insertRemoteLog(
         message: 'Finished syncing',

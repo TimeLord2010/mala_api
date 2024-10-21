@@ -8,11 +8,22 @@ import 'package:mala_api/src/data/responses/post_patient_changes_response.dart';
 import 'package:mala_api/src/factories/http_client.dart';
 import 'package:vit_dart_extensions/vit_dart_extensions_io.dart';
 
+import '../factories/logger.dart';
+
 class PatientApiRepository {
   Future<GetPatientChangesResponse> getServerChanges() async {
     var response = await dio.get('/patient/sync');
     Map<String, dynamic> body = response.data;
-    return GetPatientChangesResponse.fromMap(body);
+    var result = GetPatientChangesResponse.fromMap(body);
+    var dates = result.dates;
+    if (dates != null &&
+        (dates.finalDate != null || dates.initialDate != null)) {
+      var initialDate = dates.initialDate?.formatAsReadable();
+      var finalDate = dates.finalDate?.formatAsReadable();
+      logger.debug(
+          '(PatientApiRepository.getServerChanges) dates: $initialDate - $finalDate');
+    }
+    return result;
   }
 
   Future<PostPatientChangesResponse> postChanges({
