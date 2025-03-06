@@ -9,7 +9,7 @@ Future<void> fetchChangedPatients({
   if (rep is! HybridPatientRepository) {
     return;
   }
-  await rep.updatePatientsFromServer(
+  await rep.updatePatientsFromServerByPieces(
     updater: updater,
     didCancel: didCancel,
   );

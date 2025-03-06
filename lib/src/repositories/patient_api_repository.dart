@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:dio/dio.dart';
 import 'package:mala_api/src/data/entities/patient.dart';
 import 'package:mala_api/src/data/responses/get_patient_changes_response.dart';
@@ -12,6 +14,23 @@ import '../factories/logger.dart';
 
 class PatientApiRepository {
   Future<GetPatientChangesResponse> getServerChanges() async {
+    var response = await dio.get('/patient/sync/zip');
+    Uint8List data = response.data;
+
+    final decompressedData = GZipDecoder().decodeBytes(data);
+
+    // Convert the decompressed data to a string
+    final jsonString = utf8.decode(decompressedData);
+
+    // Decode the JSON string into a Dart object
+    final jsonData = jsonDecode(jsonString);
+
+    var result = GetPatientChangesResponse.fromMap(jsonData);
+
+    return result;
+  }
+
+  Future<GetPatientChangesResponse> getServerChangesByPieces() async {
     var response = await dio.get('/patient/sync');
     Map<String, dynamic> body = response.data;
     var result = GetPatientChangesResponse.fromMap(body);

@@ -82,7 +82,12 @@ class HybridPatientRepository extends PatientInterface<String> {
     }
   }
 
-  Future<void> updatePatientsFromServer({
+  /// Fetches the changes of patients (either new, updated or deleted) and
+  /// commit then to the local storage.
+  ///
+  /// This method will fetch the patients in pages by repeatadly checking in
+  /// the server for changes until there is none.
+  Future<void> updatePatientsFromServerByPieces({
     void Function(String? lastSync)? updater,
     bool Function()? didCancel,
   }) async {
