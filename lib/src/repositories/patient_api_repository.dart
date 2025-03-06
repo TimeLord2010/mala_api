@@ -14,13 +14,20 @@ import '../factories/logger.dart';
 
 class PatientApiRepository {
   Future<GetPatientChangesResponse> getServerChanges() async {
-    var response = await dio.get('/patient/sync/zip');
-    Uint8List data = response.data;
+    var response = await dio.get(
+      '/patient/sync/zip',
+      options: Options(
+        responseType: ResponseType.plain,
+      ),
+    );
+    String base64 = response.data;
+    Uint8List bytes = base64Decode(base64);
 
-    final decompressedData = GZipDecoder().decodeBytes(data);
-
-    // Convert the decompressed data to a string
-    final jsonString = utf8.decode(decompressedData);
+    var decoder = GZipDecoder();
+    assert(bytes.elementAt(0) == 31);
+    assert(bytes.elementAt(1) == 139);
+    final decompressed = decoder.decodeBytes(bytes);
+    final jsonString = utf8.decode(decompressed);
 
     // Decode the JSON string into a Dart object
     final jsonData = jsonDecode(jsonString);
