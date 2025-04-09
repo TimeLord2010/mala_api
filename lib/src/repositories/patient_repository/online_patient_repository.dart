@@ -64,19 +64,19 @@ class OnlinePatientRepository extends PatientInterface<String> {
     );
     if (changed == null) return; // TODO: Remove picture from disk if deleted
     var insertedIds = response.changed?.inserted ?? [];
-    List<Patient> newPatients =
-        changed.where((x) => x.remoteId == null).toList();
+    var newPatients = changed.where((x) => x.remoteId == null);
     if (insertedIds.length != newPatients.length) {
       throw Exception('Api did respond with right number of inserted ids');
     }
+
+    // Fetching patient picture
     for (var i = 0; i < insertedIds.length; i++) {
       var remoteId = insertedIds[i];
-      var patient = newPatients[i];
+      var patient = newPatients.elementAt(i);
       await assignRemoteIdToPatient(patient, remoteId);
-      if (patient.hasPicture == true) {
-        await updateRemotePatientPicture(patient);
-      }
+      await updateRemotePatientPicture(patient);
     }
+
     var oldPatients = changed.where((x) => x.remoteId != null);
     for (var patient in oldPatients) {
       patient.uploadedAt = DateTime.now();
