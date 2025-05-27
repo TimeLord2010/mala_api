@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:mala_api/src/usecases/entities/patient/local_upsert_patient.dart';
+import 'package:vit_dart_extensions/vit_dart_extensions.dart';
 
 import '../../data/entities/patient.dart';
 import '../../data/interfaces/patient_interface.dart';
@@ -100,7 +101,7 @@ class HybridPatientRepository extends PatientInterface<String> {
         var patientsRep = PatientApiRepository();
         return await patientsRep
             .getServerChanges()
-            .timeout(const Duration(seconds: 6));
+            .timeout(const Duration(seconds: 8));
       });
       return newPatients;
     }
@@ -152,16 +153,27 @@ class HybridPatientRepository extends PatientInterface<String> {
         ids.addAll(currentIds);
         logger.debug('Scanning ids: $currentIds');
 
-        for (var patient in response.changed) {
-          var remoteId = patient.remoteId!;
-          var localId = await localRepository.findIdByRemoteId(remoteId);
-          if (localId != null) {
-            logger.warn('Local patient found with same remote id when syncing');
-            patient.id = localId;
+        if (response.changed.isNotEmpty) {
+          var changedPatientGroups =
+              response.changed.chunck((response.changed.length / 2).ceil());
+
+          Future<void> processChanged(Iterable<Patient> changeds) async {
+            for (var patient in changeds) {
+              var remoteId = patient.remoteId!;
+              var localId = await localRepository.findIdByRemoteId(remoteId);
+              if (localId != null) {
+                logger.warn(
+                    'Local patient found with same remote id when syncing');
+                patient.id = localId;
+              }
+              await localUpsertPatient(patient);
+              setLastServerDate(patient.uploadedAt!);
+            }
           }
-          await localUpsertPatient(patient);
-          setLastServerDate(patient.uploadedAt!);
+
+          await Future.wait(changedPatientGroups.map((x) => processChanged(x)));
         }
+
         for (var deleteRecord in response.deleted) {
           for (var patientRemoteId in deleteRecord.patientIds) {
             var localId =
