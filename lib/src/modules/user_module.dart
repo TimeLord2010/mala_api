@@ -9,5 +9,9 @@ class UserModule {
     await signout();
   }
 
+  /// Checks for a valid JWT in the local storage.
+  ///
+  /// As a side effect, this will also refresh the JWT in the http client with
+  /// the value on the local storage.
   bool get isLogged => isAuthenticated();
 }

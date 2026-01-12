@@ -5,6 +5,8 @@ import '../../../data/enums/local_keys.dart';
 import '../../../factories/logger.dart';
 import '../../http/set_jwt_header.dart';
 
+/// Updates the http client with the given JWT and persist it in the local
+/// storage.
 Future<void> updateJwt(String? jwt) async {
   setJwtHeader(jwt);
   var prefs = GetIt.I.get<SharedPreferences>();
