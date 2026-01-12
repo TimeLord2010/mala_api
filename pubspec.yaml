@@ -16,7 +16,7 @@ dependencies:
   pdf: ^3.11.1
   printing: ^5.13.2
   search_cep: ^4.0.2
-  shared_preferences: ^2.3.2
+  shared_preferences: ^2.5.0
   system_info2: ^4.0.0
   vit_dart_extensions: ^3.0.0
   vit_logger: ^2.0.1
