@@ -1,4 +1,5 @@
 import 'package:mala_api/src/data/interfaces/patient_interface.dart';
+import 'package:mala_api/src/factories/create_database_client.dart';
 import 'package:mala_api/src/modules/patient_module.dart';
 import 'package:mala_api/src/repositories/index.dart';
 
@@ -18,6 +19,6 @@ Future<PatientInterface> createPatientRepository() async {
 }
 
 Future<LocalPatientRepository> _createLocal() async {
-  var isar = await createDatabaseClient();
-  return LocalPatientRepository(isar);
+  var db = await createDatabaseClient();
+  return LocalPatientRepository(db);
 }

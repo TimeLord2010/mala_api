@@ -11,11 +11,13 @@ dependencies:
   get_it: ^9.2.0
   jwt_decoder: ^2.0.1
   logger: ^2.6.2
+  path: ^1.9.0
   path_provider: ^2.1.5
   pdf: ^3.11.1
   printing: ^5.13.2
   search_cep: ^4.0.2
   shared_preferences: ^2.5.4
+  sqlite3: ^3.1.4
   system_info2: ^4.1.0
   vit_dart_extensions: ^4.2.0
 

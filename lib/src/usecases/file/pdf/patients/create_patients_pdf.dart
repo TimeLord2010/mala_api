@@ -62,7 +62,7 @@ Widget _createPatient(Patient patient) {
 }
 
 Widget _createFields(Patient patient) {
-  var address = patient.address.value;
+  var address = patient.address;
   return Column(
     children: <Widget>[
       _createRow(

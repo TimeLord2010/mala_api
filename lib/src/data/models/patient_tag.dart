@@ -13,7 +13,7 @@ class PatientTag {
   factory PatientTag.fromPatient(Patient patient) {
     return PatientTag(
       name: patient.name ?? '',
-      address: patient.address.value,
+      address: patient.address,
     );
   }
 }

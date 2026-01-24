@@ -2,54 +2,38 @@ import 'package:mala_api/src/data/entities/address.dart';
 import 'package:vit_dart_extensions/vit_dart_extensions.dart';
 
 class Patient {
-  Id id = Isar.autoIncrement;
+  int id = 0;
 
-  @Index(
-    type: IndexType.hash,
-    name: 'remoteIdIndex',
-    unique: true,
-    replace: true,
-    caseSensitive: false,
-  )
   String? remoteId;
 
   bool? hasPicture;
 
-  @ignore
   DateTime? uploadedAt;
 
-  @Index(type: IndexType.value)
   String? name;
   List<String>? phones;
   String? motherName;
 
-  @Index()
   String? cpf;
   String? observation;
 
   /// Exists to improve performance for filtering users that
   /// have a certain age.
-  @Index()
   int? yearOfBirth;
 
   /// Exists to improve query performance for month birthdays.
-  @Index()
   int? monthOfBirth;
 
   /// Exists to improve query performance for birthdays.
-  @Index()
   int? dayOfBirth;
 
-  @Index(type: IndexType.value)
-  List<short>? activitiesId;
+  List<int>? activitiesId;
 
-  @Index()
   DateTime? createdAt;
 
-  @Index()
   DateTime? updatedAt;
 
-  final address = IsarLink<Address>();
+  Address? address;
 
   Patient({
     this.remoteId,
@@ -98,7 +82,7 @@ class Patient {
     );
     var address = map['address'];
     if (address != null) {
-      p.address.value = Address.fromMap(address);
+      p.address = Address.fromMap(address);
     }
     dynamic id = map['id'];
     if (id is int) {
@@ -109,7 +93,6 @@ class Patient {
     return p;
   }
 
-  @ignore
   DateTime? get birthDate {
     if (yearOfBirth == null || monthOfBirth == null || dayOfBirth == null) {
       return null;
@@ -117,14 +100,12 @@ class Patient {
     return DateTime(yearOfBirth!, monthOfBirth!, dayOfBirth!);
   }
 
-  @ignore
   int? get years {
     if (birthDate == null) return null;
     var dif = DateTime.now().difference(birthDate!);
     return (dif.inDays / 365).floor();
   }
 
-  @ignore
   bool get hasBirthDayThisMonth {
     var birth = birthDate;
     if (birth == null) return false;
@@ -132,7 +113,6 @@ class Patient {
     return nowMonth == birth.month;
   }
 
-  @ignore
   bool get isBirthdayToday {
     var birth = birthDate;
     if (birth == null) return false;
@@ -140,7 +120,6 @@ class Patient {
     return now.month == birth.month && now.day == birth.day;
   }
 
-  @ignore
   Map<String, dynamic> get toMap {
     return {
       'id': id,
@@ -156,13 +135,12 @@ class Patient {
       if (monthOfBirth != null) ...{'monthOfBirth': monthOfBirth},
       if (dayOfBirth != null) ...{'dayOfBirth': dayOfBirth},
       if (activitiesId?.isNotEmpty ?? false) ...{'activitiesId': activitiesId},
-      if (address.value != null) ...{'address': address.value?.toMap},
+      if (address != null) ...{'address': address!.toMap},
       if (createdAt != null) ...{'createdAt': createdAt!.toIso8601String()},
       if (updatedAt != null) ...{'updatedAt': updatedAt!.toIso8601String()},
     };
   }
 
-  @ignore
   Map<String, dynamic> get toApiMap {
     var map = toMap;
     map.remove('id');
@@ -173,9 +151,8 @@ class Patient {
     return map;
   }
 
-  @ignore
   bool get isEmpty {
-    if (id != Isar.autoIncrement) return false;
+    if (id != 0) return false;
     if (name != null || cpf != null || motherName != null) return false;
     if (dayOfBirth != null || monthOfBirth != null || yearOfBirth != null) {
       return false;
@@ -187,7 +164,6 @@ class Patient {
   }
 
   @override
-  @ignore
   int get hashCode => id.hashCode;
 
   @override

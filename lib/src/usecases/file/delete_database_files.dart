@@ -1,35 +1,22 @@
-import 'dart:io';
-
 import 'package:vit_dart_extensions/vit_dart_extensions_io.dart';
 
+import '../../database/database_client.dart';
 import '../../factories/logger.dart';
-import '../object/error/get_error_message.dart';
 import 'get_database_directory.dart';
 
 Future<void> deleteDatabaseFiles() async {
   var logger = createSdkLogger('deleteDatabaseFiles');
 
-  var isar = await createDatabaseClient();
-  String? filePath = isar.path;
-  await isar.close(deleteFromDisk: true);
-  if (filePath != null) {
-    logger.i('Database file: $filePath');
-    var file = File(filePath);
-    bool exists = file.existsSync();
-    if (exists) {
-      try {
-        await file.delete();
-      } catch (e) {
-        logger.e('Failed to delete database file: ${getErrorMessage(e)}');
-      }
-    }
-  }
-  destroyDatabaseClient();
+  // Close and delete using DatabaseClient
+  await DatabaseClient.deleteDatabase();
+
+  // Clean up any remaining SQLite files
   var dir = await getDatabaseDirectory();
   var files = dir.listDirectoryFiles();
   files.listen((event) async {
     var path = event.getName(true);
-    if (path.contains('.isar')) {
+    // SQLite creates .db, .db-shm, .db-wal files
+    if (path.contains('.db')) {
       logger.w('Deleting database file: $path');
       event.deleteSync();
     } else {

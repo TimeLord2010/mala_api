@@ -1,23 +1,16 @@
-import 'package:mala_api/src/data/entities/patient.dart';
-
 class Address {
-  Id id = Isar.autoIncrement;
+  int id = 0;
 
   String? zipCode;
   String? state;
   String? city;
 
-  @Index(type: IndexType.value)
   String? district;
 
-  @Index(type: IndexType.value)
   String? street;
 
   String? number;
   String? complement;
-
-  @Backlink(to: 'address')
-  final patient = IsarLink<Patient>();
 
   Address({
     this.city,
@@ -43,7 +36,6 @@ class Address {
     return a;
   }
 
-  @ignore
   Map<String, dynamic> get toMap {
     return {
       'id': id,
