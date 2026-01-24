@@ -30,6 +30,7 @@ class DatabaseClient {
 
   static Future<void> _initializeDatabase(Database db) async {
     db.execute('PRAGMA foreign_keys = ON');
+    db.execute('PRAGMA journal_mode = WAL');
 
     final result = db.select('PRAGMA user_version');
     final currentVersion = result.first['user_version'] as int;

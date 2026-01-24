@@ -76,95 +76,87 @@ class LocalPatientRepository extends PatientInterface<int> {
 
   @override
   Future<Patient> upsert(Patient patient) async {
-    db.execute('BEGIN TRANSACTION');
-
-    try {
-      // Upsert address first if exists
-      int? addressId;
-      if (patient.address != null) {
-        addressId = await _upsertAddress(patient.address!);
-      }
-
-      // Upsert patient
-      if (patient.id == 0) {
-        // Insert new patient
-        db.execute('''
-          INSERT INTO patients (
-            remote_id, has_picture, name, cpf, mother_name,
-            observation, year_of_birth, month_of_birth, day_of_birth,
-            created_at, updated_at, address_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', [
-          patient.remoteId,
-          patient.hasPicture == true ? 1 : 0,
-          patient.name,
-          patient.cpf,
-          patient.motherName,
-          patient.observation,
-          patient.yearOfBirth,
-          patient.monthOfBirth,
-          patient.dayOfBirth,
-          patient.createdAt?.toIso8601String(),
-          patient.updatedAt?.toIso8601String(),
-          addressId,
-        ]);
-
-        patient.id = db.lastInsertRowId;
-        _logger.i('New id: ${patient.id}');
-      } else {
-        // Update existing patient
-        db.execute('''
-          UPDATE patients SET
-            remote_id = ?, has_picture = ?, name = ?, cpf = ?,
-            mother_name = ?, observation = ?, year_of_birth = ?,
-            month_of_birth = ?, day_of_birth = ?, created_at = ?,
-            updated_at = ?, address_id = ?
-          WHERE id = ?
-        ''', [
-          patient.remoteId,
-          patient.hasPicture == true ? 1 : 0,
-          patient.name,
-          patient.cpf,
-          patient.motherName,
-          patient.observation,
-          patient.yearOfBirth,
-          patient.monthOfBirth,
-          patient.dayOfBirth,
-          patient.createdAt?.toIso8601String(),
-          patient.updatedAt?.toIso8601String(),
-          addressId,
-          patient.id,
-        ]);
-      }
-
-      // Update phones (delete and re-insert)
-      db.execute('DELETE FROM patient_phones WHERE patient_id = ?', [patient.id]);
-      if (patient.phones != null && patient.phones!.isNotEmpty) {
-        for (final phone in patient.phones!) {
-          db.execute('''
-            INSERT INTO patient_phones (patient_id, phone_number)
-            VALUES (?, ?)
-          ''', [patient.id, phone]);
-        }
-      }
-
-      // Update activities (delete and re-insert)
-      db.execute('DELETE FROM patient_activities WHERE patient_id = ?', [patient.id]);
-      if (patient.activitiesId != null && patient.activitiesId!.isNotEmpty) {
-        for (final activityId in patient.activitiesId!) {
-          db.execute('''
-            INSERT INTO patient_activities (patient_id, activity_id)
-            VALUES (?, ?)
-          ''', [patient.id, activityId]);
-        }
-      }
-
-      db.execute('COMMIT');
-      return patient;
-    } catch (e) {
-      db.execute('ROLLBACK');
-      rethrow;
+    // Upsert address first if exists
+    int? addressId;
+    if (patient.address != null) {
+      addressId = await _upsertAddress(patient.address!);
     }
+
+    // Upsert patient
+    if (patient.id == 0) {
+      // Insert new patient
+      db.execute('''
+        INSERT INTO patients (
+          remote_id, has_picture, name, cpf, mother_name,
+          observation, year_of_birth, month_of_birth, day_of_birth,
+          created_at, updated_at, address_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ''', [
+        patient.remoteId,
+        patient.hasPicture == true ? 1 : 0,
+        patient.name,
+        patient.cpf,
+        patient.motherName,
+        patient.observation,
+        patient.yearOfBirth,
+        patient.monthOfBirth,
+        patient.dayOfBirth,
+        patient.createdAt?.toIso8601String(),
+        patient.updatedAt?.toIso8601String(),
+        addressId,
+      ]);
+
+      patient.id = db.lastInsertRowId;
+      _logger.i('New id: ${patient.id}');
+    } else {
+      // Update existing patient
+      db.execute('''
+        UPDATE patients SET
+          remote_id = ?, has_picture = ?, name = ?, cpf = ?,
+          mother_name = ?, observation = ?, year_of_birth = ?,
+          month_of_birth = ?, day_of_birth = ?, created_at = ?,
+          updated_at = ?, address_id = ?
+        WHERE id = ?
+      ''', [
+        patient.remoteId,
+        patient.hasPicture == true ? 1 : 0,
+        patient.name,
+        patient.cpf,
+        patient.motherName,
+        patient.observation,
+        patient.yearOfBirth,
+        patient.monthOfBirth,
+        patient.dayOfBirth,
+        patient.createdAt?.toIso8601String(),
+        patient.updatedAt?.toIso8601String(),
+        addressId,
+        patient.id,
+      ]);
+    }
+
+    // Update phones (delete and re-insert)
+    db.execute('DELETE FROM patient_phones WHERE patient_id = ?', [patient.id]);
+    if (patient.phones != null && patient.phones!.isNotEmpty) {
+      for (final phone in patient.phones!) {
+        db.execute('''
+          INSERT INTO patient_phones (patient_id, phone_number)
+          VALUES (?, ?)
+        ''', [patient.id, phone]);
+      }
+    }
+
+    // Update activities (delete and re-insert)
+    db.execute('DELETE FROM patient_activities WHERE patient_id = ?', [patient.id]);
+    if (patient.activitiesId != null && patient.activitiesId!.isNotEmpty) {
+      for (final activityId in patient.activitiesId!) {
+        db.execute('''
+          INSERT INTO patient_activities (patient_id, activity_id)
+          VALUES (?, ?)
+        ''', [patient.id, activityId]);
+      }
+    }
+
+    return patient;
   }
 
   Future<int> _upsertAddress(Address address) async {

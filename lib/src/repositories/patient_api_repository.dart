@@ -130,6 +130,12 @@ class PatientApiRepository {
           return null;
         }
       }
+
+      // Temporary
+      if (response == null) {
+        return null;
+      }
+
       rethrow;
     }
   }
