@@ -7,15 +7,15 @@ import '../../../../repositories/patient_repository/hybrid_patient_repository.da
 import '../../../object/error/get_error_message.dart';
 
 ///
-Future<void> sendLocalPatientsToServer({
-  required PatientInterface rep,
-}) async {
+Future<void> sendLocalPatientsToServer({required PatientInterface rep}) async {
+  var logger = createSdkLogger('sendLocalPatientsToServer');
+
   if (rep is HybridPatientRepository) {
     try {
       await rep.sendAllToApi();
     } on Exception catch (e) {
       var msg = getErrorMessage(e) ?? 'Falha na sincronização';
-      logger.error(msg);
+      logger.e(msg);
     }
   }
 }

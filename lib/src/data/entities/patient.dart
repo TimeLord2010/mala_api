@@ -1,10 +1,6 @@
-import 'package:isar/isar.dart';
 import 'package:mala_api/src/data/entities/address.dart';
 import 'package:vit_dart_extensions/vit_dart_extensions.dart';
 
-part 'patient.g.dart';
-
-@collection
 class Patient {
   Id id = Isar.autoIncrement;
 
@@ -22,9 +18,7 @@ class Patient {
   @ignore
   DateTime? uploadedAt;
 
-  @Index(
-    type: IndexType.value,
-  )
+  @Index(type: IndexType.value)
   String? name;
   List<String>? phones;
   String? motherName;
@@ -150,49 +144,21 @@ class Patient {
   Map<String, dynamic> get toMap {
     return {
       'id': id,
-      if (remoteId != null) ...{
-        'remoteId': remoteId,
-      },
-      if (uploadedAt != null) ...{
-        'uploadedAt': uploadedAt!.toIso8601String(),
-      },
-      if (name != null) ...{
-        'name': name,
-      },
+      if (remoteId != null) ...{'remoteId': remoteId},
+      if (uploadedAt != null) ...{'uploadedAt': uploadedAt!.toIso8601String()},
+      if (name != null) ...{'name': name},
       'hasPicture': hasPicture,
-      if (phones?.isNotEmpty ?? false) ...{
-        'phones': phones,
-      },
-      if (motherName != null) ...{
-        'motherName': motherName,
-      },
-      if (cpf?.isNotEmpty ?? false) ...{
-        'cpf': cpf,
-      },
-      if (observation?.isNotEmpty ?? false) ...{
-        'observation': observation,
-      },
-      if (yearOfBirth != null) ...{
-        'yearOfBirth': yearOfBirth,
-      },
-      if (monthOfBirth != null) ...{
-        'monthOfBirth': monthOfBirth,
-      },
-      if (dayOfBirth != null) ...{
-        'dayOfBirth': dayOfBirth,
-      },
-      if (activitiesId?.isNotEmpty ?? false) ...{
-        'activitiesId': activitiesId,
-      },
-      if (address.value != null) ...{
-        'address': address.value?.toMap,
-      },
-      if (createdAt != null) ...{
-        'createdAt': createdAt!.toIso8601String(),
-      },
-      if (updatedAt != null) ...{
-        'updatedAt': updatedAt!.toIso8601String(),
-      }
+      if (phones?.isNotEmpty ?? false) ...{'phones': phones},
+      if (motherName != null) ...{'motherName': motherName},
+      if (cpf?.isNotEmpty ?? false) ...{'cpf': cpf},
+      if (observation?.isNotEmpty ?? false) ...{'observation': observation},
+      if (yearOfBirth != null) ...{'yearOfBirth': yearOfBirth},
+      if (monthOfBirth != null) ...{'monthOfBirth': monthOfBirth},
+      if (dayOfBirth != null) ...{'dayOfBirth': dayOfBirth},
+      if (activitiesId?.isNotEmpty ?? false) ...{'activitiesId': activitiesId},
+      if (address.value != null) ...{'address': address.value?.toMap},
+      if (createdAt != null) ...{'createdAt': createdAt!.toIso8601String()},
+      if (updatedAt != null) ...{'updatedAt': updatedAt!.toIso8601String()},
     };
   }
 

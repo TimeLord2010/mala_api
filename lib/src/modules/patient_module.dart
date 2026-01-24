@@ -13,6 +13,8 @@ import '../usecases/entities/index.dart';
 import '../usecases/object/error/get_error_message.dart';
 
 class PatientModule {
+  final _logger = createSdkLogger('PatientModule');
+
   final semaphore = PatientsSemaphore();
   static final StreamController<Patient> patientUploadController =
       StreamController.broadcast();
@@ -122,7 +124,7 @@ class PatientModule {
 
       if (apiData == null) {
         // No data found after all.
-        logger.warn('Updating local patient $remoteId to flag no picture');
+        _logger.w('Updating local patient $remoteId to flag no picture');
         patient.hasPicture = false;
 
         // Fixing the patient model to flag no picture.
@@ -130,27 +132,21 @@ class PatientModule {
         return null;
       }
 
-      await saveOrRemoveProfilePicture(
-        patientId: patient.id,
-        data: apiData,
-      );
+      await saveOrRemoveProfilePicture(patientId: patient.id, data: apiData);
     } catch (e, stack) {
-      unawaited(insertRemoteLog(
-        context: 'Carregando imagem de paciente',
-        message: getErrorMessage(e) ?? 'Falha ao carregar imagem de paciente',
-        stack: stack.toString(),
-        extras: {
-          'id': patient.remoteId,
-        },
-      ));
+      unawaited(
+        insertRemoteLog(
+          context: 'Carregando imagem de paciente',
+          message: getErrorMessage(e) ?? 'Falha ao carregar imagem de paciente',
+          stack: stack.toString(),
+          extras: {'id': patient.remoteId},
+        ),
+      );
     }
     return null;
   }
 
   Future<void> savePicture(int id, [Uint8List? data]) async {
-    await saveOrRemoveProfilePicture(
-      patientId: id,
-      data: data,
-    );
+    await saveOrRemoveProfilePicture(patientId: id, data: data);
   }
 }

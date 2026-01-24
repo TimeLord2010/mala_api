@@ -1,5 +1,3 @@
-import 'package:vit_logger/vit_logger.dart';
-
 import '../../../../../data/entities/patient.dart';
 import '../../../../../factories/create_api_synchonizer.dart';
 
@@ -15,16 +13,6 @@ Future<void> sendChangesInBackground(
   if (rep == null) {
     return;
   }
-  var stopWatch = VitStopWatch('Sending patient to server in background');
-  try {
-    await rep.upsertPatient(
-      patient,
-      throwOnError: throwOnError,
-    );
-  } catch (e) {
-    stopWatch.lap(tag: 'Error');
-    rethrow;
-  } finally {
-    stopWatch.stop();
-  }
+
+  await rep.upsertPatient(patient, throwOnError: throwOnError);
 }

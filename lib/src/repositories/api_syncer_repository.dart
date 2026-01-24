@@ -19,10 +19,12 @@ class ApiSynchronizerRepository {
     required this.errorReporter,
   });
 
+  final _logger = createSdkLogger('ApiSynchronizerRepository');
+
   Future<void> retryFailedSyncronizations() async {
     var pendingDeletion = preferences.getStringList(_deleteKey) ?? [];
     for (var patient in pendingDeletion) {
-      logger.info('Sending pending deletion: $patient');
+      _logger.i('Sending pending deletion: $patient');
       await deletePatient(patient);
       await Future.delayed(const Duration(milliseconds: 500));
     }
@@ -30,7 +32,7 @@ class ApiSynchronizerRepository {
     var pendingUpdate = preferences.getStringList(_updateKey) ?? [];
     for (var patientId in pendingUpdate) {
       var id = int.parse(patientId);
-      logger.info('Sending pending upsert: $id');
+      _logger.i('Sending pending upsert: $id');
       var rep = hybridPatientRepository.localRepository;
       var patient = await rep.getById(id);
       if (patient == null) continue;
@@ -58,10 +60,7 @@ class ApiSynchronizerRepository {
     );
   }
 
-  Future<void> deletePatient(
-    String patientId, {
-    bool throwOnError = false,
-  }) {
+  Future<void> deletePatient(String patientId, {bool throwOnError = false}) {
     return _sendChangeToServer(
       entityId: patientId,
       key: _deleteKey,
@@ -84,7 +83,7 @@ class ApiSynchronizerRepository {
       await function();
       if (key != null) await _removeKey(entityId: entityId, key: key);
     } catch (error, stack) {
-      logger.error(stack.toString());
+      _logger.e(stack.toString());
       try {
         if (key != null) {
           await errorReporter(key, error);
@@ -92,8 +91,9 @@ class ApiSynchronizerRepository {
           await errorReporter(entityId.toString(), error);
         }
       } catch (e) {
-        logger.error(
-            'Failed to report error from api sync: ${getErrorMessage(e)}');
+        _logger.e(
+          'Failed to report error from api sync: ${getErrorMessage(e)}',
+        );
       }
       if (throwOnError) rethrow;
     }

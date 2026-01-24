@@ -52,12 +52,14 @@ class _Configuration {
     required this.verticalSpacing,
     required this.margin,
   }) {
-    logger.info('Horizontal margin: ${margin.toString()}');
-    logger.info('Tag width: $width');
-    logger.info('Tag height: $height');
-    logger.info('Tag horizontal spacing: $horizontalSpacing');
-    logger.info('Tag vertical spacing: $verticalSpacing');
+    _logger.i('Horizontal margin: ${margin.toString()}');
+    _logger.i('Tag width: $width');
+    _logger.i('Tag height: $height');
+    _logger.i('Tag horizontal spacing: $horizontalSpacing');
+    _logger.i('Tag vertical spacing: $verticalSpacing');
   }
+
+  final _logger = createSdkLogger('CreateTagsPdf:Config');
 
   double get horizontalMargin => margin.left + margin.right;
 
@@ -70,9 +72,8 @@ class _Configuration {
   }
 }
 
-Future<Uint8List> createTagsPdf({
-  required Iterable<PatientTag> tags,
-}) async {
+Future<Uint8List> createTagsPdf({required Iterable<PatientTag> tags}) async {
+  final logger = createSdkLogger('CreateTagsPdf');
   var configuration = _Configuration(
     height: getTagHeight(),
     width: getTagWidth(),
@@ -88,19 +89,19 @@ Future<Uint8List> createTagsPdf({
 
   var tagsPerLine = _getTagsPerLine(configuration);
   if (tagsPerLine != 2) {
-    logger.warn('Tags per line: $tagsPerLine');
+    logger.w('Tags per line: $tagsPerLine');
   } else {
-    logger.info('Tags per line: $tagsPerLine');
+    logger.i('Tags per line: $tagsPerLine');
   }
   var tagsPerColumn = _getTagsPerColumn(configuration);
   if (tagsPerColumn != 11) {
-    logger.warn('Tags per column: $tagsPerColumn');
+    logger.w('Tags per column: $tagsPerColumn');
   } else {
-    logger.info('Tags per column: $tagsPerColumn');
+    logger.i('Tags per column: $tagsPerColumn');
   }
 
   var tagsPerPage = tagsPerColumn * tagsPerLine;
-  logger.info('Tags per page: $tagsPerPage');
+  logger.i('Tags per page: $tagsPerPage');
 
   var doc = Document();
   var chuncks = tags.chunck(tagsPerPage);
@@ -143,15 +144,15 @@ Page _createPage({
 
         var isLastRow = rowIndex == tagsPerColumn - 1;
 
-        rows.add(Row(
-          children: tagsInRow.map((x) {
-            return _createTag(x, config, isLastRow);
-          }).toList(),
-        ));
+        rows.add(
+          Row(
+            children: tagsInRow.map((x) {
+              return _createTag(x, config, isLastRow);
+            }).toList(),
+          ),
+        );
       }
-      return Column(
-        children: rows,
-      );
+      return Column(children: rows);
     },
   );
   return page;
@@ -163,33 +164,21 @@ Container _createTag(PatientTag tag, _Configuration config, bool isLastRow) {
     width: config.width,
     height: config.height,
     // color: PdfColor.fromHex('#FFAAAA'),
-    padding: const EdgeInsets.only(
-      left: 0.6 * _cm,
-      top: 0.4 * _cm,
-    ),
+    padding: const EdgeInsets.only(left: 0.6 * _cm, top: 0.4 * _cm),
     margin: EdgeInsets.only(
       right: config.horizontalSpacing,
       bottom: isLastRow ? 0 : config.verticalSpacing,
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        tag.name,
-        _street(address),
-        _zipCityState(address),
-      ].map((x) {
+      children: [tag.name, _street(address), _zipCityState(address)].map((x) {
         var text = Text(
           x,
           overflow: TextOverflow.clip,
           maxLines: 1,
-          style: const TextStyle(
-            fontSize: 9,
-          ),
+          style: const TextStyle(fontSize: 9),
         );
-        return FittedBox(
-          child: text,
-          fit: BoxFit.scaleDown,
-        );
+        return FittedBox(child: text, fit: BoxFit.scaleDown);
       }).toList(),
     ),
   );
@@ -198,8 +187,9 @@ Container _createTag(PatientTag tag, _Configuration config, bool isLastRow) {
 String _street(Address address) {
   var streetStr = (address.street?.isEmpty ?? true) ? null : address.street;
   var numberStr = (address.number?.isEmpty ?? true) ? null : address.number;
-  var districtStr =
-      (address.district?.isEmpty ?? true) ? null : address.district;
+  var districtStr = (address.district?.isEmpty ?? true)
+      ? null
+      : address.district;
   if (streetStr == null && numberStr == null && districtStr == null) {
     return '~';
   }

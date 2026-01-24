@@ -14,16 +14,15 @@ Future<void> saveOrRemoveProfilePicture({
   required Uint8List? data,
   Directory? dir,
 }) async {
-  var file = await getPictureFile(
-    patientId,
-    basePath: dir?.path,
-  );
+  var logger = createSdkLogger('saveOrRemoveProfilePicture');
+
+  var file = await getPictureFile(patientId, basePath: dir?.path);
   if (data != null) {
-    logger.info('Saving pacient picture $patientId');
+    logger.i('Saving pacient picture $patientId');
     await file.create(recursive: true);
     await file.writeAsBytes(data);
   } else {
-    logger.info('No pacient picture found $patientId');
+    logger.i('No pacient picture found $patientId');
     var exists = file.existsSync();
     if (exists) {
       await file.delete();

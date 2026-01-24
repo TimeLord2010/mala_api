@@ -10,24 +10,25 @@ Future<void> setTagValue({
   required String logKey,
   required double? value,
 }) async {
+  var logger = createSdkLogger('setTagValue');
   var rep = createLocalStoreRepository();
 
   if (value == null) {
-    logger.info('($logKey) Removing value...');
+    logger.i('($logKey) Removing value...');
     await rep.remove(LocalKeys.pdfTagWidth);
     return;
   }
 
   if (value < minimum) {
-    logger.warn('($logKey) Aborted: value $value was too small');
+    logger.w('($logKey) Aborted: value $value was too small');
     return;
   }
 
   if (value > maximum) {
-    logger.warn('($logKey) Aborted: value $value was too high');
+    logger.w('($logKey) Aborted: value $value was too high');
     return;
   }
 
-  logger.info('($logKey) $value');
+  logger.i('($logKey) $value');
   await rep.setDouble(key, value);
 }

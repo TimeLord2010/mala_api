@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:mala_api/src/factories/create_local_patient_repository.dart';
 import 'package:mala_api/src/repositories/patient_repository/local_patient_repository.dart';
-import 'package:vit_logger/vit_logger.dart';
 
 import '../../../data/entities/patient.dart';
 import '../../../factories/create_patient_repository.dart';
@@ -19,9 +18,6 @@ Future<Patient> upsertPatient(
   void Function()? onUpload,
   void Function(Object err)? onUploadFail,
 }) async {
-  var patientId = patient.id;
-  var stopWatch = VitStopWatch('upsertPatient:$patientId');
-
   // Upserting patient
   //
   // We don't use the regular patient repository factory because it cannot
@@ -37,24 +33,22 @@ Future<Patient> upsertPatient(
 
   // Updating picture locally
   if (!ignorePicture) {
-    await saveOrRemoveProfilePicture(
-      patientId: result.id,
-      data: pictureData,
-    );
+    await saveOrRemoveProfilePicture(patientId: result.id, data: pictureData);
   }
 
   // Checks if the patient needs to be sent to the server.
   if (syncWithServer && rep != null) {
-    var future = sendChangesInBackground(patient).then((_) {
-      onUpload?.call();
-    }).catchError((err) {
-      onUploadFail?.call(err);
-    });
+    var future = sendChangesInBackground(patient)
+        .then((_) {
+          onUpload?.call();
+        })
+        .catchError((err) {
+          onUploadFail?.call(err);
+        });
     if (waitForBackgroundUpload) {
       await future;
     }
   }
 
-  stopWatch.stop();
   return result;
 }

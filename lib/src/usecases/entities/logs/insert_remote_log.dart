@@ -14,6 +14,8 @@ Future<void> insertRemoteLog({
   Map<String, dynamic>? extras,
   String level = 'info',
 }) async {
+  var logger = createSdkLogger('insertRemoteLog');
+
   try {
     int getVirtualMemorySize() {
       try {
@@ -51,7 +53,7 @@ Future<void> insertRemoteLog({
     );
   } catch (e) {
     var msg = getErrorMessage(e) ?? 'Falha ao enviar logs';
-    logger.error('(insertRemoteLog) $msg');
+    logger.e('(insertRemoteLog) $msg');
   }
 }
 

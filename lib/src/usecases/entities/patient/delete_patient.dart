@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:vit_logger/vit_logger.dart';
-
 import '../../../data/entities/patient.dart';
 import '../../../factories/create_patient_repository.dart';
 import '../../../factories/logger.dart';
@@ -13,27 +11,28 @@ Future<void> deletePatient(
   void Function()? onUpload,
   void Function(Object err)? onUploadError,
 }) async {
+  var logger = createSdkLogger('deletePatient');
+
   if (!operationPermission.deletePatient) {
-    logger.warn('Aborted patient deletion due to operation permission');
+    logger.w('Aborted patient deletion due to operation permission');
     return;
   }
 
-  var stopWatch = VitStopWatch('deletePatient');
-  try {
-    var rep = await createPatientRepository();
-    var remoteId = patient.remoteId;
-    if (remoteId != null) {
-      unawaited(sendDeletionInBackground(remoteId).then((_) {
-        onUpload?.call();
-      }).catchError((err) {
-        onUploadError?.call(err);
-      }));
-      // await postPatientsChanges(
-      //   deleted: [remoteId],
-      // );
-    }
-    await rep.delete(patient);
-  } finally {
-    stopWatch.stop();
+  var rep = await createPatientRepository();
+  var remoteId = patient.remoteId;
+  if (remoteId != null) {
+    unawaited(
+      sendDeletionInBackground(remoteId)
+          .then((_) {
+            onUpload?.call();
+          })
+          .catchError((err) {
+            onUploadError?.call(err);
+          }),
+    );
+    // await postPatientsChanges(
+    //   deleted: [remoteId],
+    // );
   }
+  await rep.delete(patient);
 }

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
-import 'package:isar/isar.dart';
 import 'package:mala_api/src/data/entities/address.dart';
 import 'package:mala_api/src/data/entities/patient.dart';
 import 'package:mala_api/src/data/interfaces/patient_interface.dart';
@@ -11,7 +10,6 @@ import 'package:mala_api/src/factories/logger.dart';
 import 'package:mala_api/src/usecases/entities/index.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vit_dart_extensions/vit_dart_extensions.dart';
-import 'package:vit_logger/vit_logger.dart';
 
 import '../../usecases/file/get_export_patients_file_name.dart';
 
@@ -19,6 +17,8 @@ class LocalPatientRepository extends PatientInterface<int> {
   final Isar isar;
 
   LocalPatientRepository(this.isar);
+
+  final _logger = createSdkLogger('LocalPatientRepository');
 
   @override
   Future<int> count([PatientQuery? query]) async {
@@ -41,8 +41,9 @@ class LocalPatientRepository extends PatientInterface<int> {
     int? skip,
     int? limit,
   }) async {
-    var docs =
-        await _buildQuery(query).offset(skip ?? 0).limit(limit ?? 60).findAll();
+    var docs = await _buildQuery(
+      query,
+    ).offset(skip ?? 0).limit(limit ?? 60).findAll();
     return docs;
   }
 
@@ -52,7 +53,7 @@ class LocalPatientRepository extends PatientInterface<int> {
     await isar.writeTxn(() async {
       var hadId = patient.id > 0;
       var id = await isar.patients.put(patient);
-      if (!hadId) logger.info('New id: $id');
+      if (!hadId) _logger.i('New id: $id');
     });
     // var inserted = oldId != patient.id;
     // if (inserted) {
@@ -75,10 +76,8 @@ class LocalPatientRepository extends PatientInterface<int> {
     required int skip,
     required int limit,
   }) {
-    var stopWatch = VitStopWatch('findLocalPatients');
     var query = isar.patients.where();
     var patients = query.remoteIdIsNull().offset(skip).limit(limit).findAll();
-    stopWatch.stop();
     return patients;
   }
 
@@ -140,11 +139,8 @@ class LocalPatientRepository extends PatientInterface<int> {
     void Function(double progress)? onProgress,
   }) async {
     var dir = await getApplicationDocumentsDirectory();
-    logger.info('zipFile: $zipFileName');
-    await extractFileToDisk(
-      zipFileName,
-      dir.path,
-    );
+    _logger.i('zipFile: $zipFileName');
+    await extractFileToDisk(zipFileName, dir.path);
     var entities = dir.listSync();
     var backupFolders = entities.where((x) {
       return x is Directory && x.path.contains('Mala backup');
@@ -160,10 +156,7 @@ class LocalPatientRepository extends PatientInterface<int> {
       if (!picFolderExists) {
         return null;
       }
-      var file = await getPictureFile(
-        id,
-        basePath: picturesFolder.path,
-      );
+      var file = await getPictureFile(id, basePath: picturesFolder.path);
       var exists = file.existsSync();
       if (exists) {
         return file.readAsBytes();
@@ -173,15 +166,14 @@ class LocalPatientRepository extends PatientInterface<int> {
 
     try {
       var filename = backupFolder.path + sep + getExportPatientsFileName();
-      var patients = await loadPatientsFromJson(
-        filename: filename,
-      );
+      var patients = await loadPatientsFromJson(filename: filename);
       var chuncks = patients.chunck(50);
       var added = <Patient>[];
       for (int i = 0; i < chuncks.length; i++) {
         var chunck = chuncks.elementAt(i);
-        var creationDates =
-            chunck.map((x) => x.createdAt).whereType<DateTime>();
+        var creationDates = chunck
+            .map((x) => x.createdAt)
+            .whereType<DateTime>();
         var foundAlreadySaved = await listByCreation(creationDates);
         bool hasCreated(DateTime dt) {
           return foundAlreadySaved.any((x) => x.createdAt == dt);
@@ -196,10 +188,7 @@ class LocalPatientRepository extends PatientInterface<int> {
           var picData = await getPic(record.id);
           record.id = Isar.autoIncrement;
           await upsert(record);
-          await saveOrRemoveProfilePicture(
-            patientId: record.id,
-            data: picData,
-          );
+          await saveOrRemoveProfilePicture(patientId: record.id, data: picData);
         }
         added.addAll(newRecords);
 
@@ -218,9 +207,7 @@ class LocalPatientRepository extends PatientInterface<int> {
       }
       return added;
     } finally {
-      await backupFolder.delete(
-        recursive: true,
-      );
+      await backupFolder.delete(recursive: true);
     }
   }
 

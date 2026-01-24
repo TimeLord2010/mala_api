@@ -10,6 +10,8 @@ import '../usecases/object/index.dart';
 
 /// Contains functions involving the server communication directly.
 class ServerModule {
+  final _logger = createSdkLogger('ServerModule');
+
   /// Syncs the changes between server and local storage.
   ///
   /// - Fetches the new and changes patients from the server.
@@ -55,18 +57,20 @@ class ServerModule {
       await sendFailedBackgroundOperations();
     } catch (e, stack) {
       var msg = getErrorMessage(e);
-      logger.error('Failed to sync data: $msg');
+      _logger.e('Failed to sync data: $msg');
       if (isNoInternetError(e)) {
-        logger.warn('No internet detected! Ended error handling');
+        _logger.w('No internet detected! Ended error handling');
         return;
       }
       var dialogMsg = msg ?? 'Erro desconhecido';
-      unawaited(insertRemoteLog(
-        context: 'Syncronizing data',
-        message: dialogMsg,
-        stack: stack.toString(),
-        level: 'error',
-      ));
+      unawaited(
+        insertRemoteLog(
+          context: 'Syncronizing data',
+          message: dialogMsg,
+          stack: stack.toString(),
+          level: 'error',
+        ),
+      );
       if (shouldAbort()) return;
       errorNotifier('sincronização de registros', dialogMsg);
     }

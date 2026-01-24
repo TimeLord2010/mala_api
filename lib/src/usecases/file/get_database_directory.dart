@@ -5,6 +5,8 @@ import 'package:path_provider/path_provider.dart';
 import '../../factories/logger.dart';
 
 Future<Directory> getDatabaseDirectory() async {
+  var logger = createSdkLogger('getDatabaseDirectory');
+
   Future<Directory> getDir() async {
     if (Platform.isIOS || Platform.isMacOS) {
       var dir = await getLibraryDirectory();
@@ -19,6 +21,6 @@ Future<Directory> getDatabaseDirectory() async {
   }
 
   var dir = await getDir();
-  logger.info('Database directory: ${dir.path}');
+  logger.i('Database directory: ${dir.path}');
   return dir;
 }

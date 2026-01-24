@@ -28,6 +28,8 @@ class HybridPatientRepository extends PatientInterface<String> {
     required this.updatedStream,
   });
 
+  final _logger = createSdkLogger('HybridPatientRepository');
+
   @override
   Future<int> count([PatientQuery? query]) {
     return localRepository.count(query);
@@ -40,46 +42,42 @@ class HybridPatientRepository extends PatientInterface<String> {
   }
 
   @override
-  Future<Iterable<Patient>> list(
-    PatientQuery query, {
-    int? skip,
-    int? limit,
-  }) {
-    return localRepository.list(
-      query,
-      skip: skip,
-      limit: limit,
-    );
+  Future<Iterable<Patient>> list(PatientQuery query, {int? skip, int? limit}) {
+    return localRepository.list(query, skip: skip, limit: limit);
   }
 
   @override
   Future<Patient> upsert(Patient patient) async {
     var localPatient = await localRepository.upsert(patient);
     var uploadFuture = onlineRepository.upsert(localPatient);
-    unawaited(uploadFuture.then((v) {
-      updatedStream.add(v);
-    }).catchError((err) {
-      updatedStream.addError(err);
-    }));
+    unawaited(
+      uploadFuture
+          .then((v) {
+            updatedStream.add(v);
+          })
+          .catchError((err) {
+            updatedStream.addError(err);
+          }),
+    );
     return localPatient;
   }
 
   Future<void> sendAllToApi() async {
     var limit = 100;
     while (true) {
-      var patients =
-          await localRepository.findLocalPatients(skip: 0, limit: limit);
-      if (patients.isEmpty) break;
-      await onlineRepository.postPatientsChanges(
-        changed: patients,
+      var patients = await localRepository.findLocalPatients(
+        skip: 0,
+        limit: limit,
       );
-      unawaited(insertRemoteLog(
-        message: 'Sending ${patients.length} local patients',
-        context: 'Send local patients to server',
-        extras: {
-          'creationDates': patients.map((x) => x.createdAt).toList(),
-        },
-      ));
+      if (patients.isEmpty) break;
+      await onlineRepository.postPatientsChanges(changed: patients);
+      unawaited(
+        insertRemoteLog(
+          message: 'Sending ${patients.length} local patients',
+          context: 'Send local patients to server',
+          extras: {'creationDates': patients.map((x) => x.createdAt).toList()},
+        ),
+      );
     }
   }
 
@@ -99,9 +97,9 @@ class HybridPatientRepository extends PatientInterface<String> {
     Future<GetPatientChangesResponse> fetch() async {
       var newPatients = await eventTimes.add(() async {
         var patientsRep = PatientApiRepository();
-        return await patientsRep
-            .getServerChanges()
-            .timeout(const Duration(seconds: 8));
+        return await patientsRep.getServerChanges().timeout(
+          const Duration(seconds: 8),
+        );
       });
       return newPatients;
     }
@@ -133,37 +131,39 @@ class HybridPatientRepository extends PatientInterface<String> {
     try {
       while (true) {
         if (didCancel != null && didCancel()) {
-          logger.warn('Aborting sync since the called canceled');
+          _logger.w('Aborting sync since the called canceled');
           break;
         }
         var response = await fetch();
-        logger.info('Found ${response.length} to sync from server');
+        _logger.i('Found ${response.length} to sync from server');
         if (response.isEmpty) {
-          logger.info('Completed fetch changes');
+          _logger.i('Completed fetch changes');
           break;
         }
 
         // Breaking cycles
         var currentIds = response.changed.map((x) => x.remoteId!).toSet();
         if (ids.isNotEmpty && currentIds.every((x) => ids.contains(x))) {
-          logger.warn('Sync finished because every id is the same as before');
+          _logger.w('Sync finished because every id is the same as before');
           break;
         }
         ids.clear();
         ids.addAll(currentIds);
-        logger.debug('Scanning ids: $currentIds');
+        _logger.d('Scanning ids: $currentIds');
 
         if (response.changed.isNotEmpty) {
-          var changedPatientGroups =
-              response.changed.chunck((response.changed.length / 2).ceil());
+          var changedPatientGroups = response.changed.chunck(
+            (response.changed.length / 2).ceil(),
+          );
 
           Future<void> processChanged(Iterable<Patient> changeds) async {
             for (var patient in changeds) {
               var remoteId = patient.remoteId!;
               var localId = await localRepository.findIdByRemoteId(remoteId);
               if (localId != null) {
-                logger.warn(
-                    'Local patient found with same remote id when syncing');
+                _logger.w(
+                  'Local patient found with same remote id when syncing',
+                );
                 patient.id = localId;
               }
               await localUpsertPatient(patient);
@@ -176,10 +176,11 @@ class HybridPatientRepository extends PatientInterface<String> {
 
         for (var deleteRecord in response.deleted) {
           for (var patientRemoteId in deleteRecord.patientIds) {
-            var localId =
-                await localRepository.findIdByRemoteId(patientRemoteId);
+            var localId = await localRepository.findIdByRemoteId(
+              patientRemoteId,
+            );
             if (localId == null) {
-              logger.warn('Did not found patient to delete: $patientRemoteId');
+              _logger.w('Did not found patient to delete: $patientRemoteId');
               continue;
             }
             await localRepository.deleteById(localId);
@@ -203,18 +204,22 @@ class HybridPatientRepository extends PatientInterface<String> {
           updater?.call(lastServerDate?.toIso8601String());
         }
       }
-      unawaited(insertRemoteLog(
-        message: 'Finished syncing',
-        context: 'Sync patients',
-        extras: getExtras(),
-      ));
+      unawaited(
+        insertRemoteLog(
+          message: 'Finished syncing',
+          context: 'Sync patients',
+          extras: getExtras(),
+        ),
+      );
     } catch (e) {
       var msg = getErrorMessage(e) ?? '?';
-      unawaited(insertRemoteLog(
-        message: msg,
-        context: 'Sync patients',
-        extras: getExtras(),
-      ));
+      unawaited(
+        insertRemoteLog(
+          message: msg,
+          context: 'Sync patients',
+          extras: getExtras(),
+        ),
+      );
       rethrow;
     }
   }

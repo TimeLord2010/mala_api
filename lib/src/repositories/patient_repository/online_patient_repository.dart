@@ -6,6 +6,8 @@ import '../../usecases/entities/patient/api/update_remote_patient_picture.dart';
 import '../patient_api_repository.dart';
 
 class OnlinePatientRepository extends PatientInterface<String> {
+  final _logger = createSdkLogger('OnlinePatientRepository');
+
   @override
   Future<int> count([PatientQuery? query]) {
     // TODO: implement count
@@ -16,7 +18,7 @@ class OnlinePatientRepository extends PatientInterface<String> {
   Future<void> delete(Patient patient) async {
     var id = patient.remoteId;
     if (id == null) {
-      logger.info('Abort online patient deletion: no remote id');
+      _logger.i('Abort online patient deletion: no remote id');
       return;
     }
     await deleteById(id);
@@ -47,9 +49,7 @@ class OnlinePatientRepository extends PatientInterface<String> {
 
   @override
   Future<Patient> upsert(Patient patient) async {
-    await postPatientsChanges(
-      changed: [patient],
-    );
+    await postPatientsChanges(changed: [patient]);
     return patient;
   }
 
@@ -58,10 +58,7 @@ class OnlinePatientRepository extends PatientInterface<String> {
     List<String>? deleted,
   }) async {
     var api = PatientApiRepository();
-    var response = await api.postChanges(
-      changed: changed,
-      deleted: deleted,
-    );
+    var response = await api.postChanges(changed: changed, deleted: deleted);
     if (changed == null) return; // TODO: Remove picture from disk if deleted
     var insertedIds = response.changed?.inserted ?? [];
     var newPatients = changed.where((x) => x.remoteId == null);

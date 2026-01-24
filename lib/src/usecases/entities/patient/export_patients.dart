@@ -19,9 +19,12 @@ Future<void> exportPatients({
     required String event,
     required double progress,
     String? message,
-  }) onProgress,
+  })
+  onProgress,
   int step = 200,
 }) async {
+  var logger = createSdkLogger('exportPatients');
+
   var sep = Platform.pathSeparator;
   var values = getCurrentDateNumbers();
   var dir = Directory('$outputDir${sep}Mala backup [$values]');
@@ -40,7 +43,7 @@ Future<void> exportPatients({
       limit: step,
       skip: page * step,
     );
-    logger.info('Exporting ${items.length} patients');
+    logger.i('Exporting ${items.length} patients');
     var maps = items.map((x) => jsonEncode(x.toMap)).join(',');
     if (hasNextPage) {
       stream.write('$maps,');
@@ -65,7 +68,7 @@ Future<void> exportPatients({
     );
     await Future.delayed(const Duration(milliseconds: 10));
   }
-  logger.info('Exported $processed patients');
+  logger.i('Exported $processed patients');
   stream.write(']');
   await stream.flush();
   await stream.close();
@@ -74,14 +77,9 @@ Future<void> exportPatients({
   await encoder.addDirectory(
     dir,
     onProgress: (progress) {
-      onProgress(
-        event: 'Compactando',
-        progress: progress,
-      );
+      onProgress(event: 'Compactando', progress: progress);
     },
   );
   await encoder.close();
-  await dir.delete(
-    recursive: true,
-  );
+  await dir.delete(recursive: true);
 }

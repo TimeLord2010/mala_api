@@ -13,12 +13,12 @@ import 'package:vit_dart_extensions/vit_dart_extensions_io.dart';
 import '../factories/logger.dart';
 
 class PatientApiRepository {
+  final _logger = createSdkLogger('PatientApiRepository');
+
   Future<GetPatientChangesResponse> getServerChanges() async {
     var response = await dio.get(
       '/patient/sync/zip',
-      options: Options(
-        responseType: ResponseType.plain,
-      ),
+      options: Options(responseType: ResponseType.plain),
     );
     String base64 = response.data;
     Uint8List bytes = base64Decode(base64);
@@ -46,8 +46,7 @@ class PatientApiRepository {
         (dates.finalDate != null || dates.initialDate != null)) {
       var initialDate = dates.initialDate?.toIso8601String();
       var finalDate = dates.finalDate?.toIso8601String();
-      logger.debug(
-          '(PatientApiRepository.getServerChanges) dates: $initialDate - $finalDate');
+      _logger.d('(getServerChanges) dates: $initialDate - $finalDate');
     }
     return result;
   }
@@ -63,10 +62,7 @@ class PatientApiRepository {
       }).toList(),
       'deleted': (deleted ?? []),
     };
-    var response = await dio.post(
-      '/patient/sync',
-      data: payload,
-    );
+    var response = await dio.post('/patient/sync', data: payload);
     Map<String, dynamic> data = response.data;
     return PostPatientChangesResponse.fromMap(data);
   }
@@ -81,11 +77,7 @@ class PatientApiRepository {
     await dio.put(
       uploadUrl,
       data: data,
-      options: Options(
-        headers: {
-          'Content-Type': 'application/octet-stream',
-        },
-      ),
+      options: Options(headers: {'Content-Type': 'application/octet-stream'}),
     );
   }
 
@@ -106,9 +98,7 @@ class PatientApiRepository {
     }
     var response = await dio.get(
       downloadUrl,
-      options: Options(
-        responseType: ResponseType.bytes,
-      ),
+      options: Options(responseType: ResponseType.bytes),
     );
     var data = response.data;
     if (data is String) {
@@ -119,7 +109,8 @@ class PatientApiRepository {
       return bytes;
     }
     throw Exception(
-        'Failed to load picture: Data was not a list of bytes: Type found=${data.runtimeType}');
+      'Failed to load picture: Data was not a list of bytes: Type found=${data.runtimeType}',
+    );
   }
 
   Future<String?> _getDownloadUrl(String remoteId) async {
@@ -127,9 +118,7 @@ class PatientApiRepository {
       var url = '/patient/picture/download';
       var response = await dio.get(
         url,
-        queryParameters: {
-          'patientId': remoteId,
-        },
+        queryParameters: {'patientId': remoteId},
       );
       String downloadUrl = response.data;
       return downloadUrl;
@@ -149,10 +138,7 @@ class PatientApiRepository {
     var url = '/patient/picture/upload';
     var response = await dio.get(
       url,
-      queryParameters: {
-        'patientId': patientId,
-        'extension': extension,
-      },
+      queryParameters: {'patientId': patientId, 'extension': extension},
     );
     String uploadUrl = response.data;
     return uploadUrl;
@@ -161,9 +147,7 @@ class PatientApiRepository {
   Future<void> deletePicture({required String patientId}) async {
     await dio.delete(
       '/patient/picture',
-      queryParameters: {
-        'patientId': patientId,
-      },
+      queryParameters: {'patientId': patientId},
     );
   }
 }

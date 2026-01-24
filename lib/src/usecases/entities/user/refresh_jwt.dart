@@ -7,6 +7,8 @@ import 'update_jwt.dart';
 ///
 /// @throws [FailedToRefreshJwt] if not jwt token is set in the http client.
 Future<void> refreshJwt() async {
+  var logger = createSdkLogger('refreshJwt');
+
   getLocalJwt();
   var rep = UserRepository();
   int i = 0;
@@ -16,7 +18,7 @@ Future<void> refreshJwt() async {
       await updateJwt(newJwt);
       return;
     } catch (e) {
-      logger.error('ERROR while refreshing JWT: ${e.toString()}');
+      logger.e('ERROR while refreshing JWT: ${e.toString()}');
       if (i++ < 3) {
         await Future.delayed(const Duration(seconds: 1));
       } else {

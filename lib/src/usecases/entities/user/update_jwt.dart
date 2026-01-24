@@ -8,10 +8,12 @@ import '../../http/set_jwt_header.dart';
 /// Updates the http client with the given JWT and persist it in the local
 /// storage.
 Future<void> updateJwt(String? jwt) async {
+  var logger = createSdkLogger('updateJwt');
+
   setJwtHeader(jwt);
   var prefs = GetIt.I.get<SharedPreferences>();
   if (jwt != null) {
-    logger.debug('Removing jwt from local storage');
+    logger.d('Removing jwt from local storage');
     await prefs.setString(LocalKeys.jwt.name, jwt);
   } else {
     await prefs.remove(LocalKeys.jwt.name);
