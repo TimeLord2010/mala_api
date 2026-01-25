@@ -48,7 +48,7 @@ class DatabaseClient {
 
   static Future<void> _createSchema(Database db) async {
     db.execute('''
-      CREATE TABLE addresses (
+      CREATE TABLE IF NOT EXISTS addresses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         zip_code TEXT,
         state TEXT,
@@ -61,7 +61,7 @@ class DatabaseClient {
     ''');
 
     db.execute('''
-      CREATE TABLE patients (
+      CREATE TABLE IF NOT EXISTS patients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         remote_id TEXT UNIQUE,
         has_picture INTEGER,
@@ -80,7 +80,7 @@ class DatabaseClient {
     ''');
 
     db.execute('''
-      CREATE TABLE patient_activities (
+      CREATE TABLE IF NOT EXISTS patient_activities (
         patient_id INTEGER NOT NULL,
         activity_id INTEGER NOT NULL,
         PRIMARY KEY (patient_id, activity_id),
@@ -89,7 +89,7 @@ class DatabaseClient {
     ''');
 
     db.execute('''
-      CREATE TABLE patient_phones (
+      CREATE TABLE IF NOT EXISTS patient_phones (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         patient_id INTEGER NOT NULL,
         phone_number TEXT NOT NULL,
@@ -102,18 +102,18 @@ class DatabaseClient {
 
   static void _createIndexes(Database db) {
     final indexes = [
-      'CREATE UNIQUE INDEX idx_patients_remote_id ON patients(remote_id)',
-      'CREATE INDEX idx_patients_name ON patients(name COLLATE NOCASE)',
-      'CREATE INDEX idx_patients_cpf ON patients(cpf)',
-      'CREATE INDEX idx_patients_year_of_birth ON patients(year_of_birth)',
-      'CREATE INDEX idx_patients_month_of_birth ON patients(month_of_birth)',
-      'CREATE INDEX idx_patients_day_of_birth ON patients(day_of_birth)',
-      'CREATE INDEX idx_patients_created_at ON patients(created_at)',
-      'CREATE INDEX idx_patients_updated_at ON patients(updated_at)',
-      'CREATE INDEX idx_patients_address_id ON patients(address_id)',
-      'CREATE INDEX idx_patients_birthday ON patients(month_of_birth, day_of_birth)',
-      'CREATE INDEX idx_addresses_district ON addresses(district COLLATE NOCASE)',
-      'CREATE INDEX idx_addresses_street ON addresses(street COLLATE NOCASE)',
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_patients_remote_id ON patients(remote_id)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_name ON patients(name COLLATE NOCASE)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_cpf ON patients(cpf)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_year_of_birth ON patients(year_of_birth)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_month_of_birth ON patients(month_of_birth)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_day_of_birth ON patients(day_of_birth)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_created_at ON patients(created_at)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_updated_at ON patients(updated_at)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_address_id ON patients(address_id)',
+      'CREATE INDEX IF NOT EXISTS idx_patients_birthday ON patients(month_of_birth, day_of_birth)',
+      'CREATE INDEX IF NOT EXISTS idx_addresses_district ON addresses(district COLLATE NOCASE)',
+      'CREATE INDEX IF NOT EXISTS idx_addresses_street ON addresses(street COLLATE NOCASE)',
     ];
 
     for (final index in indexes) {
