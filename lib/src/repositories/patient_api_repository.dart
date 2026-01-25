@@ -8,6 +8,7 @@ import 'package:mala_api/src/data/entities/patient.dart';
 import 'package:mala_api/src/data/responses/get_patient_changes_response.dart';
 import 'package:mala_api/src/data/responses/post_patient_changes_response.dart';
 import 'package:mala_api/src/factories/http_client.dart';
+import 'package:mala_api/src/factories/stop_watch.dart';
 import 'package:vit_dart_extensions/vit_dart_extensions_io.dart';
 
 import '../factories/logger.dart';
@@ -16,25 +17,36 @@ class PatientApiRepository {
   final _logger = createSdkLogger('PatientApiRepository');
 
   Future<GetPatientChangesResponse> getServerChanges() async {
-    var response = await dio.get(
-      '/patient/sync/zip',
-      options: Options(responseType: ResponseType.plain),
-    );
-    String base64 = response.data;
-    Uint8List bytes = base64Decode(base64);
+    return StopWatch.wrap('PatientApiRepository:getServerChanges', (sw) async {
+      var response = await dio.get(
+        '/patient/sync/zip',
+        options: Options(responseType: ResponseType.plain),
+      );
+      var size =
+          int.tryParse(response.headers.value('content-length') ?? '') ?? 0;
+      sw.lap('Downloaded (${size.readableByteSize()})');
 
-    var decoder = GZipDecoder();
-    assert(bytes.elementAt(0) == 31);
-    assert(bytes.elementAt(1) == 139);
-    final decompressed = decoder.decodeBytes(bytes);
-    final jsonString = utf8.decode(decompressed);
+      String base64 = response.data;
+      Uint8List bytes = base64Decode(base64);
+      sw.lap('Base 64 Decoded');
 
-    // Decode the JSON string into a Dart object
-    final jsonData = jsonDecode(jsonString);
+      var decoder = GZipDecoder();
+      assert(bytes.elementAt(0) == 31);
+      assert(bytes.elementAt(1) == 139);
+      final decompressed = decoder.decodeBytes(bytes);
+      sw.lap('Zip Decompressed');
 
-    var result = GetPatientChangesResponse.fromMap(jsonData);
+      final jsonString = utf8.decode(decompressed);
+      sw.lap('Ut8 decoded');
 
-    return result;
+      // Decode the JSON string into a Dart object
+      final jsonData = jsonDecode(jsonString);
+      sw.lap('Json decoded');
+
+      var result = GetPatientChangesResponse.fromMap(jsonData);
+
+      return result;
+    });
   }
 
   Future<GetPatientChangesResponse> getServerChangesByPieces() async {
