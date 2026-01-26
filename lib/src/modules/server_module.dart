@@ -57,7 +57,7 @@ class ServerModule {
       await sendFailedBackgroundOperations();
     } catch (e, stack) {
       var msg = getErrorMessage(e);
-      _logger.e('Failed to sync data: $msg');
+      _logger.e('Failed to sync data: $stack');
       if (isNoInternetError(e)) {
         _logger.w('No internet detected! Ended error handling');
         return;

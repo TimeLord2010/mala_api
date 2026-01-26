@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:mala_api/mala_api.dart';
 import 'package:mala_api/src/usecases/entities/patient/local_upsert_patient.dart';
 
@@ -66,12 +68,27 @@ class OnlinePatientRepository extends PatientInterface<String> {
       throw Exception('Api did respond with right number of inserted ids');
     }
 
-    // Fetching patient picture
-    for (var i = 0; i < insertedIds.length; i++) {
-      var remoteId = insertedIds[i];
-      var patient = newPatients.elementAt(i);
-      await assignRemoteIdToPatient(patient, remoteId);
-      await updateRemotePatientPicture(patient);
+    if (insertedIds.length != changed.length) {
+      unawaited(
+        insertRemoteLog(
+          message:
+              'Unexpected api result: unable to get remote ids of created patients',
+          context: 'OnlinePatientRepository',
+          level: 'error',
+          extras: {
+            'changed': changed.map((x) => x.toMap).toList(),
+            'insertedIds': insertedIds,
+          },
+        ),
+      );
+    } else {
+      // Fetching patient picture
+      for (var i = 0; i < insertedIds.length; i++) {
+        var remoteId = insertedIds[i];
+        var patient = newPatients.elementAt(i);
+        await assignRemoteIdToPatient(patient, remoteId);
+        await updateRemotePatientPicture(patient);
+      }
     }
 
     var oldPatients = changed.where((x) => x.remoteId != null);
