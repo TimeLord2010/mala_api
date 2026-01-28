@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:vit_dart_extensions/vit_dart_extensions.dart';
-
 import '../../../factories/http_client.dart';
 import '../../../factories/logger.dart';
 import '../../object/error/get_error_message.dart';
@@ -16,8 +14,6 @@ Future<void> insertRemoteLog({
   var logger = createSdkLogger('insertRemoteLog');
 
   try {
-
-    var virtualMemorySize = getVirtualMemorySize();
     await dio.post(
       '/log',
       data: {
