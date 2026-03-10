@@ -98,7 +98,7 @@ class HybridPatientRepository extends PatientInterface<String> {
       var newPatients = await eventTimes.add(() async {
         var patientsRep = PatientApiRepository();
         return await patientsRep.getServerChanges().timeout(
-          const Duration(seconds: 8),
+          const Duration(seconds: 15),
         );
       });
       return newPatients;
