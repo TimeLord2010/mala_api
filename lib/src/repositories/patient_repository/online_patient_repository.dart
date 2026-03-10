@@ -68,7 +68,7 @@ class OnlinePatientRepository extends PatientInterface<String> {
       throw Exception('Api did respond with right number of inserted ids');
     }
 
-    if (insertedIds.length != changed.length) {
+    if (insertedIds.length != newPatients.length) {
       unawaited(
         insertRemoteLog(
           message:
@@ -76,7 +76,7 @@ class OnlinePatientRepository extends PatientInterface<String> {
           context: 'OnlinePatientRepository',
           level: 'error',
           extras: {
-            'changed': changed.map((x) => x.toMap).toList(),
+            'changed': newPatients.map((x) => x.toMap).toList(),
             'insertedIds': insertedIds,
           },
         ),
