@@ -18,14 +18,14 @@ Future<Uint8List> createPatientsPdf({
   required Iterable<Patient> patients,
 }) async {
   var doc = Document(
-      theme: ThemeData(
-    defaultTextStyle: TextStyle(
-      font: Font.helvetica(),
-    ),
-  ));
+    theme: ThemeData(defaultTextStyle: TextStyle(font: Font.helvetica())),
+  );
   var page = _createPage(patients);
+  print('Created patient pdfs pages');
   doc.addPage(page);
-  var bytes = await doc.save();
+  print("saving pdf to fetch bytes");
+  var bytes = await doc.save(enableEventLoopBalancing: true);
+  print('Bytes generated');
   return bytes;
 }
 
@@ -35,29 +35,54 @@ Page _createPage(Iterable<Patient> patients) {
     margin: const EdgeInsets.all(_margin),
     build: (context) {
       return [
-        Text('Listagem de pacientes',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            )),
+        Text(
+          'Listagem de pacientes',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         _createHorizontalLine(),
         SizedBox(height: 10),
-        for (var patient in patients) _createPatient(patient),
+        for (var patient in patients) ..._createPatient(patient),
       ];
     },
   );
   return page;
 }
 
-Widget _createPatient(Patient patient) {
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _createFields(patient),
+/// The patient is returned as separate top level widgets so [MultiPage] is able
+/// to break between them.
+///
+/// Wrapping everything in a single [Column] makes a patient taller than a page
+/// loop forever: [Column] is a spanning widget that always reports it still has
+/// widgets to render, so [MultiPage] keeps creating pages waiting for it to
+/// finish. The observation is the only field with an unbounded height, hence it
+/// is rendered on its own.
+List<Widget> _createPatient(Patient patient) {
+  var observation = _sanitize(patient.observation)?.trim();
+  return [
+    _createFields(patient),
+    if (observation != null && observation.isNotEmpty) ...[
       SizedBox(height: 5),
-      _createHorizontalLine(),
+      _createObservation(observation),
     ],
+    SizedBox(height: 5),
+    _createHorizontalLine(),
+  ];
+}
+
+/// [TextOverflow.span] allows a long observation to flow into the next page
+/// instead of requiring a page taller than the format.
+Widget _createObservation(String observation) {
+  return RichText(
+    overflow: TextOverflow.span,
+    text: TextSpan(
+      children: [
+        TextSpan(
+          text: 'Obs.: ',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        TextSpan(text: observation),
+      ],
+    ),
   );
 }
 
@@ -67,10 +92,7 @@ Widget _createFields(Patient patient) {
     children: <Widget>[
       _createRow(
         children: [
-          _createField(
-            title: 'Nome',
-            value: patient.name,
-          ),
+          _createField(title: 'Nome', value: patient.name),
           _createField(
             title: 'Nasc.',
             value: patient.birthDate?.formatAsReadable(false),
@@ -85,14 +107,8 @@ Widget _createFields(Patient patient) {
             value: patient.phones?.join(', '),
             valueMaxLines: 2,
           ),
-          _createField(
-            title: 'CEP',
-            value: address?.zipCode,
-          ),
-          _createField(
-            title: 'Bairro',
-            value: address?.district,
-          ),
+          _createField(title: 'CEP', value: address?.zipCode),
+          _createField(title: 'Bairro', value: address?.district),
         ],
       ),
       _createRow(
@@ -102,21 +118,10 @@ Widget _createFields(Patient patient) {
             value: address?.street,
             valueMaxLines: 4,
           ),
-          _createField(
-            title: 'Número',
-            value: address?.number,
-          ),
-          _createField(
-            title: 'Comp.',
-            value: address?.complement,
-          ),
+          _createField(title: 'Número', value: address?.number),
+          _createField(title: 'Comp.', value: address?.complement),
         ],
         getFlex: (index) => index == 0 ? 2 : 1,
-      ),
-      _createField(
-        title: 'Obs.',
-        value: patient.observation,
-        valueMaxLines: null,
       ),
     ].separatedBy(SizedBox(height: 5)).toList(),
   );
@@ -151,29 +156,43 @@ Row _createField({
           width: fieldSize,
           child: Align(
             alignment: Alignment.topRight,
-            child: Text('$title: ',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                )),
+            child: Text(
+              '$title: ',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       Expanded(
         child: Text(
-          value ?? ' ',
+          _sanitize(value) ?? ' ',
           maxLines: valueMaxLines,
           overflow: TextOverflow.clip,
         ),
-      )
+      ),
     ],
   );
 }
 
+/// The built in Helvetica only covers Latin-1, so any character outside of it
+/// is drawn as a placeholder. Replaces the ones found in patient data by their
+/// ascii counterpart.
+String? _sanitize(String? value) {
+  if (value == null) return null;
+  return value
+      .replaceAll('\u2013', '-')
+      .replaceAll('\u2014', '-')
+      .replaceAll('\u2018', "'")
+      .replaceAll('\u2019', "'")
+      .replaceAll('\u201c', '"')
+      .replaceAll('\u201d', '"')
+      .replaceAll('\u2026', '...');
+}
+
 Container _createHorizontalLine() {
   return Container(
-      width: _contentWidth,
-      height: 2,
-      color: const PdfColor.fromInt(0x00000000),
-      margin: const EdgeInsets.symmetric(
-        vertical: 2,
-      ));
+    width: _contentWidth,
+    height: 2,
+    color: const PdfColor.fromInt(0x00000000),
+    margin: const EdgeInsets.symmetric(vertical: 2),
+  );
 }
